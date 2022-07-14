@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FMuzik options</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="bootstrap.min.css" />
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <div class="fmuzik-container">
+      <div id="alert" class="alert" role="alert"></div>
+      <div id="loader" class="d-none"></div>
+      <main class="fmuzik">
+        <div class="row">
+          <div class="col">
+            <p class="h3 text-center text-uppercase">Cài đặt FMuzik</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col d-flex justify-content-center">
+            <img id="fmuzik-logo-active" class="fmuzik-logo" src="/images/icon512.png" alt="FMuzik logo" />
+            <img id="fmuzik-logo-inactive" class="fmuzik-logo d-none" src="/images/icon512x.png" alt="FMuzik logo" />
+          </div>
+        </div>
+        <hr />
+        <div class="row">
+          <div class="col-3 form-group fmuzik-label-group mb-0">
+            <label class="fmuzik-label" for="fmuzik-active">Kích hoạt FMuzik:</label>
+          </div>
+          <div class="col form-group mb-0">
+            <!-- https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_switch -->
+            <label class="switch">
+              <input id="fmuzik-active" type="checkbox" />
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+        <hr />
+        <div class="row">
+          <div class="col-3 form-group fmuzik-label-group">
+            <label class="fmuzik-label" for="fmuzik-enable-loop">Tự động phát lại video:</label>
+          </div>
+          <div class="col form-group">
+            <!-- https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_switch -->
+            <label class="switch">
+              <input id="fmuzik-enable-loop" type="checkbox" />
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-3 form-group fmuzik-label-group">
+            <label class="fmuzik-label" for="fmuzik-playlist-active">Mở tính năng playlist:</label>
+          </div>
+          <div class="col form-group">
+            <!-- https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_switch -->
+            <label class="switch">
+              <input id="fmuzik-playlist-active" type="checkbox" />
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+        <hr />
+        <div class="row">
+          <div class="col-3 form-group fmuzik-label-group">
+            <label class="fmuzik-label" for="fmuzik-everywhere">FMuzik Everywhere:</label>
+            <span class="fmuzik-label--desc"
+              >FMuzik mọi nơi</span
+            >
+          </div>
+          <div class="col form-group">
+            <label class="switch">
+              <input id="fmuzik-everywhere" type="checkbox" />
+              <span class="slider round"></span>
+            </label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col form-group fmuzik-label-group">
+            <label id="workplaceUrlLabel" class="fmuzik-label" for="workplaceUrl">Địa chỉ Workplace:</label>
+            <span class="fmuzik-label--desc"
+              >Danh sách Workplace URL sẽ được kích hoạt tiện ích FMuzik<br />(Nhớ thêm cả ID của group nhé. VD:
+              muzikinmymind có ID 983546785133426 ^^)</span
+            >
+          </div>
+        </div>
+        <div class="row">
+          <div class="col workplace-url--group-container">
+            <!-- List URL here -->
+          </div>
+        </div>
+        <div class="row">
+          <div id="workplaceUrlAdd" class="col workplace-url--group-add d-flex justify-content-center mb-2">
+            <a href="javascript:void(0)" class="workplace-url--add">+ Thêm địa chỉ</a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col form-group workplace-url--group__add-container d-none">
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <div class="input-group-text">https://fpt.workplace.com/</div>
+              </div>
+              <input type="text" class="form-control" id="workplaceUrl" placeholder="groups/idGroup" />
+              <div class="workplace-url--group__add">
+                <a href="javascript:void(0)" class="workplace-url--save-add mr-2">Thêm</a>
+                <a href="javascript:void(0)" class="workplace-url--cancel-save-add">Hủy</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <hr />
+        <div class="row">
+          <div class="col">
+            <p class="text-muted text-right">FMuzik <span id="fmuzik-version"></span> by NhutTH4</p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- <div id="buttonDiv"></div>
+    <div>
+      <p>Choose a different background color!</p>
+    </div> -->
+  </body>
+  <script src="options.js"></script>
+</html>

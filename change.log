@@ -1,0 +1,13 @@
+2.2 - 2022/03/26:
+  - Fix: button add to playlist
+  - Fix: autoplay
+  - Feature: FMuzik Everywhere
+
+2.1 - 2022/01/20:
+  - Fix: autoplay be muted
+  - Feature: work in search mode
+  - Feature: delete video from playlist panel player
+
+2.0 - 2022/01/12:
+  - Re-build FMuzik
+  - Release on Chrome Store
