@@ -1,11 +1,10 @@
-3.0 - 2022/03/26:
-  - Feature: Minimize
-  - Fix:
-
-2.2 - 2022/03/26:
-  - Fix: button add to playlist
-  - Fix: autoplay
-  - Feature: FMuzik Everywhere
+3.0 - 2022/09/02:
+  - Feature: Minimize (thank sontlc)
+  - Feature: Delete playlist (thank sontlc)
+  - Fix: Button delete song (thank sontlc)
+  - Fix: Contents on panel save playlist (thank phuongdt24)
+  - Fix: Set active FMuzik and sth else on installed
+  - Fix: UI, alert, animation, logics,...
 
 2.2 - 2022/03/26:
   - Fix: button add to playlist

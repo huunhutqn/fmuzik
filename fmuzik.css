@@ -2,6 +2,12 @@
 .d-none {
   display: none !important;
 }
+
+/** #region font color */
+.text-danger {
+  color: #dc3545;
+}
+/** #endregion font color */
 .gg-arrow-left-o {
   box-sizing: border-box;
   position: relative;
@@ -286,6 +292,89 @@
   top: 15px;
   left: 100px;
 }
+
+.fmuzik-popup-playlist:not([class*="d-none"]) ~ .fmuzik-playlist-panel > .fmuzik-playlist-panel--lock {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 99999999;
+  background: #e9e9e93d;
+  cursor: not-allowed;
+}
+
+.fmuzik-playlist-panel--toggle {
+  position: absolute;
+  /* padding: 8px 10px; */
+  top: 6px;
+  left: -20px;
+  z-index: 9;
+}
+
+.fmuzik-playlist-panel--toggle button.btn-hide {
+  top: -18px;
+}
+.fmuzik-playlist-panel--toggle button.btn-hide,
+.fmuzik-playlist-panel--toggle button.btn-show {
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 1px 2px;
+}
+
+.fmuzik-playlist-panel--toggle button.btn-hide:hover svg {
+  fill: #e4e6ea;
+  opacity: 1;
+  animation: slide1 1s ease-in-out infinite;
+}
+
+.fmuzik-playlist-panel--toggle button.btn-hide svg {
+  width: 27px;
+  height: 27px;
+  fill: #9ea3a7;
+  opacity: 0.8;
+}
+
+@keyframes slide1 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(8px, 0);
+  }
+}
+
+.fmuzik-playlist-panel.hidden .fmuzik-playlist-panel--toggle button.btn-hide {
+  opacity: 0;
+  z-index: -1;
+}
+
+.fmuzik-playlist-panel--toggle button.btn-show {
+  z-index: -1;
+  right: -360px;
+  width: 48px;
+  height: 48px;
+  top: 10px;
+  background-image: url("data:image/png;base64,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");
+  background-size: 48px 48px;
+  background-repeat: no-repeat;
+  transition: transform 1.5s;
+}
+
+.fmuzik-playlist-panel.hidden .fmuzik-playlist-panel--toggle button.btn-show {
+  z-index: 9999999;
+  transform: translateX(-460px);
+  animation: blinker 1.5s linear infinite;
+}
+
+@keyframes blinker {  
+  0% { opacity: 1.0; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1.0; }
+}
+
 .fmuzik-popup-playlist {
   display: flex;
   justify-content: center;
@@ -458,7 +547,7 @@ button.fmuzik-form-btn:hover {
 .fmuzik-playlist-save-to--bottom .fmuzik-form-input {
   margin-right: 10px;
   flex-grow: 1;
-  width: 222px;
+  width: 199px;
 }
 .fmuzik-playlist-save-to--bottom .fmuzik-form-btn {
   width: 80px;
@@ -493,13 +582,42 @@ button.fmuzik-form-btn:hover {
   color: #e9ebef;
   box-shadow: -1px -1px 4px 0px #686868;
   z-index: 999999;
+  transition: transform 1.2s;
 }
+
+.fmuzik-playlist-panel.hidden {
+  transform: translateX(360px);
+}
+
 .fmuzik-playlist-panel--container {
   width: 100%;
   height: 100%;
   position: relative;
   padding: 10px;
 }
+
+/** #region scroll */
+/* width */
+.fmuzik-playlist-panel--container ::-webkit-scrollbar {
+  width: 10px;
+  cursor: pointer;
+}
+/* Track */
+.fmuzik-playlist-panel--container ::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+ 
+/* Handle */
+.fmuzik-playlist-panel--container ::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+
+/* Handle on hover */
+.fmuzik-playlist-panel--container ::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+/** #endregion scroll */
+
 .fmuzik-player--large {
   position: fixed;
   width: 1280px;
@@ -549,7 +667,7 @@ button.fmuzik-form-btn:hover {
   overflow-y: auto;
 }
 .fmuzik-playlist-panel--list-player.fmuzik-playlist-panel--list-player-video {
-  height: calc(100% - 20px - 144px - 10px - 60px - 15px);
+  height: calc(100% - 20px - 144px - 10px - 65px - 15px);
 }
 .fmuzik-playlist__item--wrap {
   font-size: 14px;
@@ -561,8 +679,9 @@ button.fmuzik-form-btn:hover {
   font-weight: 500;
   display: flex;
   align-items: center;
-  overflow: hidden;
+  /* overflow: hidden; */
   text-overflow: ellipsis;
+  position: relative;
 }
 .fmuzik-playlist__item--wrap:hover {
   color: #ffd985;
@@ -586,7 +705,11 @@ a.fmuzik-playlist__item div {
   height: 22px;
 }
 a.fmuzik-playlist__item span {
-  flex-grow: 1;
+  display: inline-block;
+  flex-basis: 89%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  /* flex-grow: 1; */
 }
 a.fmuzik-playlist__item i {
   margin-right: 8px;
@@ -599,7 +722,7 @@ a.fmuzik-playlist__item:hover {
   width: 20px;
   height: 20px;
   position: absolute;
-  right: 37px;
+  right: 8px;
   background-color: transparent;
   border: none;
   padding: 0;
@@ -607,10 +730,12 @@ a.fmuzik-playlist__item:hover {
   background-size: contain;
 }
 .fmuzik-playlist__item--wrap:hover .fmuzik-playlist__item__delete-btn {
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20width%3D%221em%22%20height%3D%221em%22%20preserveAspectRatio%3D%22xMidYMid%20meet%22%20viewBox%3D%220%200%2028%2028%22%3E%3Cg%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M19.5%2016a5.5%205.5%200%201%201%200%2011a5.5%205.5%200%200%201%200-11zM14%202a4%204%200%200%201%203.995%203.8L18%206h5a1%201%200%200%201%20.117%201.993L23%208h-.849l-.594%207.332a6.5%206.5%200%200%200-6.746%2010.669L10.766%2026a3.75%203.75%200%200%201-3.738-3.447L5.848%208H5a1%201%200%200%201-.993-.883L4%207a1%201%200%200%201%20.883-.993L5%206h5a4%204%200%200%201%204-4zm3.73%2017.024l-.068-.058a.5.5%200%200%200-.569%200l-.07.058l-.057.07a.5.5%200%200%200%200%20.568l.058.07l1.77%201.769l-1.768%201.766l-.058.07a.5.5%200%200%200%200%20.568l.058.07l.07.057a.5.5%200%200%200%20.568%200l.07-.057l1.766-1.767l1.77%201.769l.069.058a.5.5%200%200%200%20.568%200l.07-.058l.057-.07a.5.5%200%200%200%200-.568l-.057-.07l-1.77-1.768l1.772-1.77l.058-.069a.5.5%200%200%200%200-.569l-.058-.069l-.069-.058a.5.5%200%200%200-.569%200l-.069.058l-1.772%201.77l-1.77-1.77l-.068-.058l.069.058zM14%204a2%202%200%200%200-1.995%201.85L12%206h4l-.005-.15A2%202%200%200%200%2014%204z%22%20fill%3D%22%23893333%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3Csvg width='1em' height='1em' preserveAspectRatio='xMidYMid meet' viewBox='0 0 28 28' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cpath d='M19.5 16a5.5 5.5 0 1 1 0 11a5.5 5.5 0 0 1 0-11zM14 2a4 4 0 0 1 3.995 3.8L18 6h5a1 1 0 0 1 .117 1.993L23 8h-.849l-.594 7.332a6.5 6.5 0 0 0-6.746 10.669L10.766 26a3.75 3.75 0 0 1-3.738-3.447L5.848 8H5a1 1 0 0 1-.993-.883L4 7a1 1 0 0 1 .883-.993L5 6h5a4 4 0 0 1 4-4zm3.73 17.024l-.068-.058a.5.5 0 0 0-.569 0l-.07.058l-.057.07a.5.5 0 0 0 0 .568l.058.07l1.77 1.769l-1.768 1.766l-.058.07a.5.5 0 0 0 0 .568l.058.07l.07.057a.5.5 0 0 0 .568 0l.07-.057l1.766-1.767l1.77 1.769l.069.058a.5.5 0 0 0 .568 0l.07-.058l.057-.07a.5.5 0 0 0 0-.568l-.057-.07l-1.77-1.768l1.772-1.77l.058-.069a.5.5 0 0 0 0-.569l-.058-.069l-.069-.058a.5.5 0 0 0-.569 0l-.069.058l-1.772 1.77l-1.77-1.77l-.068-.058l.069.058zM14 4a2 2 0 0 0-1.995 1.85L12 6h4l-.005-.15A2 2 0 0 0 14 4z' style='fill: rgba(232, 217, 217, 0.65);'/%3E%3C/g%3E%3C/svg%3E");
 }
 .fmuzik-playlist__item--wrap:hover .fmuzik-playlist__item__delete-btn:hover {
   cursor: pointer;
+  opacity: 1;
   background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20width%3D%221em%22%20height%3D%221em%22%20preserveAspectRatio%3D%22xMidYMid%20meet%22%20viewBox%3D%220%200%2028%2028%22%3E%3Cg%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M19.5%2016a5.5%205.5%200%201%201%200%2011a5.5%205.5%200%200%201%200-11zM14%202a4%204%200%200%201%203.995%203.8L18%206h5a1%201%200%200%201%20.117%201.993L23%208h-.849l-.594%207.332a6.5%206.5%200%200%200-6.746%2010.669L10.766%2026a3.75%203.75%200%200%201-3.738-3.447L5.848%208H5a1%201%200%200%201-.993-.883L4%207a1%201%200%200%201%20.883-.993L5%206h5a4%204%200%200%201%204-4zm3.73%2017.024l-.068-.058a.5.5%200%200%200-.569%200l-.07.058l-.057.07a.5.5%200%200%200%200%20.568l.058.07l1.77%201.769l-1.768%201.766l-.058.07a.5.5%200%200%200%200%20.568l.058.07l.07.057a.5.5%200%200%200%20.568%200l.07-.057l1.766-1.767l1.77%201.769l.069.058a.5.5%200%200%200%20.568%200l.07-.058l.057-.07a.5.5%200%200%200%200-.568l-.057-.07l-1.77-1.768l1.772-1.77l.058-.069a.5.5%200%200%200%200-.569l-.058-.069l-.069-.058a.5.5%200%200%200-.569%200l-.069.058l-1.772%201.77l-1.77-1.77l-.068-.058l.069.058zM14%204a2%202%200%200%200-1.995%201.85L12%206h4l-.005-.15A2%202%200%200%200%2014%204z%22%20fill%3D%22%23ff5f3b%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") !important;
 }
 .fmuzik-playlist__controls {

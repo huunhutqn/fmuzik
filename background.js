@@ -7,8 +7,8 @@ chrome.runtime.onInstalled.addListener(() => {
     if (!data || !data.workplaceUrl || data.workplaceUrl.length == 0) {
       chrome.storage.sync.set({ workplaceUrl: [defaultWorkplaceUrl, defaultWorkplaceUrl1] });
     }
+    chrome.storage.sync.set({ active: true, fmuzikEverywhere: true, activePlaylist: true, loopEnabled: true });
   });
-  chrome.storage.sync.set({ active: true });
 
   chrome.action.onClicked.addListener((tab) => {
     //alert("icon clicked");

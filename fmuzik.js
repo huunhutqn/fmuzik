@@ -18,7 +18,20 @@ let popupPlaylistSpinner = document.querySelector(".fmuzik-popup-playlist--spinn
 let currentPlaylistPlayer = [];
 let currentIndexPlaylistVideo = -1;
 
+const modeDev = false;
+
 //#region declear function
+
+/**
+ * Log to console in development
+ * @param {*} content 
+ */
+function logger(content) {
+  if (modeDev) {
+    console.log(content);
+  }
+}
+
 /**
  * Check condition to start FMuzik
  */
@@ -153,17 +166,17 @@ function assignFMuzikId(video) {
     if (link) {
       // single in  newsfeed
       link = link.getAttribute("href");
-      if (link[link.length - 1] == "/") {
-        link = link.substring(0, link.length - 1);
-      }
+
+      // format link video
+      link = formatLinkVideo(link);
+      
       video.setAttribute("fmuzik_video_url", link);
     } else {
       link = video.closest('a[href^="'+fptWorkplace+'"][role=link]');
       if (link) {
         link = link.getAttribute("href");
-        if (link[link.length - 1] == "/") {
-          link = link.substring(0, link.length - 1);
-        }
+        // format link video
+        link = formatLinkVideo(link);
         // album in newsfeed
         video.setAttribute("fmuzik_video_url", link);
       } else if (document.location.href.match(/\/videos\//g)) {
@@ -174,10 +187,49 @@ function assignFMuzikId(video) {
           // albumn viewer or single video viewer
           const location = document.location;
           let pathname = location.pathname;
-          if (pathname[pathname.length - 1] == "/") {
-            pathname = pathname.substring(0, pathname.length - 1);
-          }
+
+          // format link video
+          pathname = formatLinkVideo(pathname);
+          
           video.setAttribute("fmuzik_video_url", location.origin + pathname);
+        }
+      }
+    }
+  } else {
+    if (video.getAttribute("fmuzik_id") && !video.getAttribute("fmuzik_video_url")) {
+      let link = video.closest("[data-visualcompletion=ignore]")?.querySelector('a[href^="'+fptWorkplace+'"][role=link]');
+      if (link) {
+        // single in  newsfeed
+        link = link.getAttribute("href");
+        
+        // format link video
+        link = formatLinkVideo(link);
+
+        video.setAttribute("fmuzik_video_url", link);
+      } else {
+        link = video.closest('a[href^="'+fptWorkplace+'"][role=link]');
+        if (link) {
+          link = link.getAttribute("href");
+          
+          // format link video
+         link = formatLinkVideo(link);
+
+          // album in newsfeed
+          video.setAttribute("fmuzik_video_url", link);
+        } else if (document.location.href.match(/\/videos\//g)) {
+          if (
+            document.querySelector("[data-name=media-viewer-nav-container]") ||
+            document.querySelector("[data-pagelet=TahoeVideo]")
+          ) {
+            // albumn viewer or single video viewer
+            const location = document.location;
+            let pathname = location.pathname;
+            
+            // format link video
+            pathname = formatLinkVideo(pathname);
+
+            video.setAttribute("fmuzik_video_url", location.origin + pathname);
+          }
         }
       }
     }
@@ -192,7 +244,7 @@ function getIndexOfVideo(videos, videoUrl) {
   if (videos && videos.length > 0) {
     videos.forEach((element, index) => {
       // element = {url: "http...", name: "abc"}
-      if (element.url == videoUrl) {
+      if (formatLinkVideo(element.url) == formatLinkVideo(videoUrl)) {
         result = index;
       }
     });
@@ -204,6 +256,7 @@ function getIndexOfVideo(videos, videoUrl) {
  * Save video to a playlist
  */
 function saveVideoToPlaylistWithCheckbox(e, videoUrl, playlistIndex) {
+  showPopupPlaylistSpinner();
   const playlistId = e.target.getAttribute("fmuzik_playlist_id");
   const inputVideoName = document.getElementById("fmuzik-playlist-video-name");
   chrome.storage.sync.get("playlist", (data) => {
@@ -218,7 +271,10 @@ function saveVideoToPlaylistWithCheckbox(e, videoUrl, playlistIndex) {
               e.target.checked = false;
               e.target.setAttribute("checked", "false");
               //e.preventDefault();
-              showAlert("danger", "Vui lòng nhập tên gợi nhớ hợp lệ!");
+              showAlert("danger", "Vui lòng nhập tên video hợp lệ!");
+              setTimeout(() => {
+                hidePopupPlaylistSpinner();
+              }, 500);
               return setTimeout(() => {
                 hideAlert();
               }, 1000);
@@ -228,6 +284,10 @@ function saveVideoToPlaylistWithCheckbox(e, videoUrl, playlistIndex) {
               newPlaylist[index].videos.push({ url: videoUrl, name: inputVideoName.value });
               showAlert("success", "Thêm video vào playlist '" + element.name + "' thành công!");
               setTimeout(() => {
+                hidePopupPlaylistSpinner();
+                closePopupPlaylist();
+              }, 600);
+              setTimeout(() => {
                 hideAlert();
               }, 1000);
             }
@@ -235,6 +295,9 @@ function saveVideoToPlaylistWithCheckbox(e, videoUrl, playlistIndex) {
             if (indexOfUrl > -1) {
               newPlaylist[index].videos.splice(indexOfUrl, 1);
               showAlert("success", "Xóa video khỏi playlist '" + element.name + "' thành công!");
+              setTimeout(() => {
+                hidePopupPlaylistSpinner();
+              }, 600);
               setTimeout(() => {
                 hideAlert();
               }, 1000);
@@ -244,8 +307,10 @@ function saveVideoToPlaylistWithCheckbox(e, videoUrl, playlistIndex) {
       });
 
       chrome.storage.sync.set({ playlist: newPlaylist });
-      // refresh playlist panel
-      createPlaylistItems();
+      setTimeout(() => {
+        // refresh playlist panel
+        createPlaylistItems();
+      }, 500);
     }
   });
 }
@@ -263,7 +328,7 @@ function createNewPlaylist(fmuzik_id) {
       hideAlert();
     }, 1000);
   } else if (!inputVideoName || inputVideoName.value == "" || inputVideoName.value == null) {
-    showAlert("danger", "Vui lòng nhập tên gợi nhớ hợp lệ!");
+    showAlert("danger", "Vui lòng nhập tên video hợp lệ!");
     setTimeout(() => {
       hideAlert();
     }, 1000);
@@ -298,7 +363,12 @@ function createNewPlaylist(fmuzik_id) {
         createPlaylistItems();
 
         showAlert("success", "Đã thêm video vào playlist '" + input.value + "'!");
-        closePopupPlaylist();
+
+        setTimeout(() => {
+          hidePopupPlaylistSpinner();
+          closePopupPlaylist();
+        }, 600);
+
         return setTimeout(() => {
           hideAlert();
         }, 1000);
@@ -319,7 +389,7 @@ function createSaveToPlaylistElement(fmuzik_id) {
     const buttonCreate = document.createElement("button");
     buttonCreate.id = "fmuzik-playlist-create-btn";
     buttonCreate.classList.add("fmuzik-form-btn");
-    buttonCreate.innerText = "Thêm";
+    buttonCreate.innerText = "Tạo";
     buttonCreate.addEventListener("click", (e) => createNewPlaylist(fmuzik_id));
     popupPlaylistContainer.insertAdjacentHTML(
       "beforeend",
@@ -327,13 +397,13 @@ function createSaveToPlaylistElement(fmuzik_id) {
       <div class="fmuzik-playlist-save-to--container">
         <div class="fmuzik-row fmuzik-playlist-save-to--video-name">
           <div class="fmuzik-col fmuzik-form-group">
-            <label class="fmuzik-form-label">Tên gợi nhớ (*): </label>
-            <input type="text" id="fmuzik-playlist-video-name" class="fmuzik-form-input" placeholder="Nhập tên gợi nhớ (150 kí tự)">
+            <label class="fmuzik-form-label">Tên video này<span class="text-danger">*</span>: </label>
+            <input type="text" id="fmuzik-playlist-video-name" class="fmuzik-form-input" placeholder="Nhập tên gợi nhớ (< 150 kí tự)">
           </div>
         </div>
         <div class="fmuzik-row fmuzik-playlist-save-to--top">
           <div class="fmuzik-col fmuzik-form-group">
-            <label class="fmuzik-form-label">Lưu vào..</label>
+            <label class="fmuzik-form-label">Chọn playlist cần lưu vào..</label>
           </div>
         </div>
         <div class="fmuzik-row fmuzik-playlist-save-to--main">
@@ -342,8 +412,8 @@ function createSaveToPlaylistElement(fmuzik_id) {
         </div>
         <div class="fmuzik-row fmuzik-playlist-save-to--bottom">
           <div class="fmuzik-col fmuzik-form-group">
-            <label class="fmuzik-form-label">Tạo mới: </label>
-            <input type="text" id="fmuzik-playlist-create" class="fmuzik-form-input" placeholder="Nhập tên playlist (150 kí tự)">
+            <label class="fmuzik-form-label">Tạo playlist: </label>
+            <input type="text" id="fmuzik-playlist-create" class="fmuzik-form-input" placeholder="Nhập tên playlist (< 150 kí tự)">
           </div>
         </div>
       </div>
@@ -504,8 +574,10 @@ function deleteVideo(e, playlistId, video, index) {
       }, 1000);
     } else {
       const videoUrl = video.url;
+      let hasDeleted = false;
       playlist.forEach((playlistElement, i) => {
         if (
+          playlistElement.id == playlistId &&
           playlistElement.videos &&
           playlistElement.videos.length > 0 &&
           videoUrl &&
@@ -514,16 +586,63 @@ function deleteVideo(e, playlistId, video, index) {
           const indexOfUrl = getIndexOfVideo(playlistElement.videos, videoUrl);
           newPlaylist[i].videos.splice(indexOfUrl, 1);
           playlistItem = newPlaylist[i];
+          hasDeleted = true;
           showAlert("success", "Xóa video khỏi playlist '" + playlistElement.name + "' thành công!");
           setTimeout(() => {
             hideAlert();
           }, 1000);
         }
       });
+      if (!hasDeleted) {
+        showAlert("danger", "Xóa video khỏi playlist '" + playlistElement.name + "' thất bại!");
+        setTimeout(() => {
+          hideAlert();
+        }, 1000);
+      }
       playlist = newPlaylist;
       chrome.storage.sync.set({ playlist: newPlaylist });
-      // create list videos
-      createListVideosElement(playlistItem);
+      setTimeout(() => {
+        // create list videos
+        createListVideosElement(playlistItem);
+        // if (playlistItem && playlistItem.length > 0) {
+        // }
+      }, 500);
+    }
+  });
+}
+
+/**
+ * Delete playlist
+ */
+function deletePlaylist(e, playlistId, index) {
+  e.preventDefault();
+  // delete playlist
+  chrome.storage.sync.get("playlist", (data) => {
+    playlist = data && data.playlist ? data.playlist : [];
+    let playlists = [];
+
+    if (!playlist || playlist.length == 0) {
+      showAlert("danger", "Xảy ra lỗi khi xóa playlist!");
+      return setTimeout(() => {
+        hideAlert();
+      }, 1000);
+    } else {
+      playlists = playlist.filter((p,i) => p.id != playlistId);
+      if (playlists.length != playlist.length) {
+        showAlert("success", "Xóa playlist thành công!");
+          setTimeout(() => {
+            hideAlert();
+          }, 1000);
+      } else {
+        showAlert("danger", "Xảy ra lỗi khi xóa playlist!");
+        return setTimeout(() => {
+          hideAlert();
+        }, 1000);
+      }
+      playlist = playlists;
+      chrome.storage.sync.set({ playlist: playlists });
+      // create list playlist
+      createPlaylistItems();
     }
   });
 }
@@ -547,7 +666,7 @@ function createListVideosElement(playlistItem) {
       video.href = "javascript:void(0)";
       video.classList.add("fmuzik-playlist__item");
       video.setAttribute("fmuzik_playlist_id", index);
-      video.innerHTML = `<span>${element.name}</span>`;
+      video.innerHTML = `<span title="${element.name}">${element.name}</span>`;
       video.addEventListener("click", (e) => selectVideo(e, element, index));
 
       const icon = document.createElement("i");
@@ -562,6 +681,7 @@ function createListVideosElement(playlistItem) {
 
       const deleteBtnEl = document.createElement("button");
       deleteBtnEl.classList.add("fmuzik-playlist__item__delete-btn");
+      deleteBtnEl.setAttribute('title','Xóa video này?');
       deleteBtnEl.addEventListener("click", (e) => deleteVideo(e, playlistItem.id, element, index));
       divTmp.appendChild(deleteBtnEl);
       // insert item to list
@@ -621,7 +741,7 @@ function createPlaylistItems() {
         const playlistItem = document.createElement("a");
         playlistItem.href = "javascript:void(0)";
         playlistItem.classList.add("fmuzik-playlist__item");
-        playlistItem.innerHTML = `<span>${element.name}</span>`;
+        playlistItem.innerHTML = `<span title="${element.name}">${element.name}</span>`;
         playlistItem.addEventListener("click", (e) => selectPlaylist(e, element));
 
         const icon = document.createElement("i");
@@ -633,6 +753,12 @@ function createPlaylistItems() {
         const divTmp = document.createElement("div");
         divTmp.classList.add("fmuzik-playlist__item--wrap");
         divTmp.appendChild(playlistItem);
+
+        const deleteBtnEl = document.createElement("button");
+        deleteBtnEl.classList.add("fmuzik-playlist__item__delete-btn");
+        deleteBtnEl.setAttribute('title','Xóa playlist này?');
+        deleteBtnEl.addEventListener("click", (e) => deletePlaylist(e, element.id, index));
+        divTmp.appendChild(deleteBtnEl);
         // insert item to list
         listPlayer.appendChild(divTmp);
       });
@@ -652,9 +778,31 @@ function createPlaylistPanelElement() {
     playlistPanel = document.createElement("div");
     playlistPanel.classList.add("fmuzik-playlist-panel");
 
+    const playlistPanelLock = document.createElement("div");
+    playlistPanelLock.classList.add("fmuzik-playlist-panel--lock");
+    playlistPanel.appendChild(playlistPanelLock);
+
     const playlistPanelContainer = document.createElement("div");
     playlistPanelContainer.classList.add("fmuzik-playlist-panel--container");
     playlistPanel.appendChild(playlistPanelContainer);
+
+    const playlistPanelToggle = document.createElement("div");
+    playlistPanelToggle.classList.add("fmuzik-playlist-panel--toggle");
+
+    const buttonHidePlaylistPanel = document.createElement('button');
+    buttonHidePlaylistPanel.classList.add('btn-hide');
+    buttonHidePlaylistPanel.setAttribute('title', 'Ẩn FMuzik');
+    buttonHidePlaylistPanel.innerHTML = `<svg width="27px" height="27px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 5v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2zm4 6h5V7l5 5-5 5v-4H7v-2z"/></svg>`;
+    buttonHidePlaylistPanel.addEventListener('click', (e) => togglePlaylistPanel(e, true));
+    playlistPanelToggle.appendChild(buttonHidePlaylistPanel);
+
+    const buttonShowPlaylistPanel = document.createElement('button');
+    buttonShowPlaylistPanel.classList.add('btn-show');
+    buttonShowPlaylistPanel.setAttribute('title', 'Hiện FMuzik');
+    buttonShowPlaylistPanel.addEventListener('click', (e) => togglePlaylistPanel(e, false));
+    playlistPanelToggle.appendChild(buttonShowPlaylistPanel);
+
+    playlistPanel.appendChild(playlistPanelToggle);
 
     const playlistPanelPlayerMask = document.createElement("div");
     playlistPanelPlayerMask.classList.add("fmuzik-playlist-panel--player-mask");
@@ -681,7 +829,7 @@ function createPlaylistPanelElement() {
 
     const credit = document.createElement("div");
     credit.classList.add("row", "text-right", "text-muted", "fmuzik-credit");
-    credit.innerText = "FMuzik by NhutTH4 =)";
+    credit.innerHTML = `FMuzik by NhutTH4 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" xmlns:v="https://vecta.io/nano" style="position: relative;bottom: -4px;fill: #fff;"><path d="M10 22a8 8 0 1 1 0-16 8 8 0 1 1 0 16zm0-2a6 6 0 1 0 0-12 6 6 0 1 0 0 12zm3-5a3 3 0 1 1-6 0h6zm-5-2a1 1 0 1 0 0-2 1 1 0 1 0 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 1 1 0 2zm6.625-5c-.827-.18-3.375-1.59-3.375-4.125 0-1.036.839-1.875 1.875-1.875a1.87 1.87 0 0 1 1.5.75 1.87 1.87 0 0 1 1.5-.75C21.161 2 22 2.839 22 3.875 22 6.41 19.452 7.82 18.625 8z" fill-rule="evenodd"></path></svg>`;
     playlistPanelContainer.appendChild(credit);
 
     playlistPanel.appendChild(playlistPanelContainer);
@@ -697,7 +845,8 @@ function createPlaylistPanelElement() {
 /**
  * Save video to playlist
  */
-function saveVideoToPlaylist(e, fmuzik_id) {
+function saveVideoToPlaylist(e, video) {
+  const fmuzik_id = video.getAttribute("fmuzik_id");
   e.preventDefault();
   e.stopPropagation();
 
@@ -707,54 +856,66 @@ function saveVideoToPlaylist(e, fmuzik_id) {
   // prepare data
   const rowFmuzikPopupPlaylistMain = document.querySelector(".fmuzik-playlist-save-to--main");
   rowFmuzikPopupPlaylistMain.innerHTML = "";
-  chrome.storage.sync.get("playlist", (data) => {
-    playlist = data && data.playlist ? data.playlist : [];
 
-    if (!playlist || playlist.length == 0) {
-      // add empty mask
-      const maskEmpty = document.createElement("div");
-      maskEmpty.classList.add("fmuzik-popup-playlist--empty");
-      rowFmuzikPopupPlaylistMain.appendChild(maskEmpty);
-    } else {
-      const video = document.querySelector("video[fmuzik_id=" + fmuzik_id + "]");
-      const videoUrl = video ? video.getAttribute("fmuzik_video_url") : "";
-      playlist.forEach((playlistElement, index) => {
-        const playlistEl = document.createElement("div");
-        playlistEl.classList.add("fmuzik-col", "fmuzik-form-checkbox-group", "fmuzik-form-group");
+  // const video = document.querySelector("video[fmuzik_id=" + fmuzik_id + "]");
+  const videoUrl = video ? video.getAttribute("fmuzik_video_url") : "";
 
-        const playlistCheckboxEl = document.createElement("input");
-        playlistCheckboxEl.setAttribute("type", "checkbox");
-        playlistCheckboxEl.id = playlistElement.id;
-        playlistCheckboxEl.setAttribute("fmuzik_playlist_id", playlistElement.id);
-        playlistCheckboxEl.classList.add("fmuzik-form-checkbox-input");
+  // if videoUrl, try to refresh get videoUrl
+  if (!videoUrl) {
+    assignFMuzikId(video);
+  }
 
-        if (
-          playlistElement.videos &&
-          playlistElement.videos.length > 0 &&
-          videoUrl &&
-          getIndexOfVideo(playlistElement.videos, videoUrl) > -1
-        ) {
-          playlistCheckboxEl.setAttribute("checked", "true");
-        }
-
-        playlistCheckboxEl.addEventListener("change", (e) => saveVideoToPlaylistWithCheckbox(e, videoUrl, index));
-
-        playlistEl.appendChild(playlistCheckboxEl);
-
-        const playlistCheckboxLabelEl = document.createElement("label");
-        playlistCheckboxLabelEl.classList.add("fmuzik-form-checkbox-label");
-        playlistCheckboxLabelEl.innerText = playlistElement.name;
-        playlistCheckboxLabelEl.setAttribute("for", playlistElement.id);
-
-        playlistEl.appendChild(playlistCheckboxLabelEl);
-
-        rowFmuzikPopupPlaylistMain.appendChild(playlistEl);
-      });
-    }
-    setTimeout(() => {
-      hidePopupPlaylistSpinner();
-    }, 500);
-  });
+  setTimeout(() => {
+    chrome.storage.sync.get("playlist", (data) => {
+      playlist = data && data.playlist ? data.playlist : [];
+  
+      if (!playlist || playlist.length == 0) {
+        // add empty mask
+        const maskEmpty = document.createElement("div");
+        maskEmpty.classList.add("fmuzik-popup-playlist--empty");
+        rowFmuzikPopupPlaylistMain.appendChild(maskEmpty);
+      } else {
+        
+        setTimeout(() => {
+          playlist.forEach((playlistElement, index) => {
+            const playlistEl = document.createElement("div");
+            playlistEl.classList.add("fmuzik-col", "fmuzik-form-checkbox-group", "fmuzik-form-group");
+    
+            const playlistCheckboxEl = document.createElement("input");
+            playlistCheckboxEl.setAttribute("type", "checkbox");
+            playlistCheckboxEl.id = playlistElement.id;
+            playlistCheckboxEl.setAttribute("fmuzik_playlist_id", playlistElement.id);
+            playlistCheckboxEl.classList.add("fmuzik-form-checkbox-input");
+    
+            if (
+              playlistElement.videos &&
+              playlistElement.videos.length > 0 &&
+              videoUrl &&
+              getIndexOfVideo(playlistElement.videos, videoUrl) > -1
+            ) {
+              playlistCheckboxEl.setAttribute("checked", "true");
+            }
+    
+            playlistCheckboxEl.addEventListener("change", (e) => saveVideoToPlaylistWithCheckbox(e, videoUrl, index));
+    
+            playlistEl.appendChild(playlistCheckboxEl);
+    
+            const playlistCheckboxLabelEl = document.createElement("label");
+            playlistCheckboxLabelEl.classList.add("fmuzik-form-checkbox-label");
+            playlistCheckboxLabelEl.innerText = playlistElement.name;
+            playlistCheckboxLabelEl.setAttribute("for", playlistElement.id);
+    
+            playlistEl.appendChild(playlistCheckboxLabelEl);
+    
+            rowFmuzikPopupPlaylistMain.appendChild(playlistEl);
+          });
+        }, 500);
+      }
+      setTimeout(() => {
+        hidePopupPlaylistSpinner();
+      }, 500);
+    });
+  }, 600);
 }
 
 /**
@@ -767,7 +928,7 @@ function setupSaveToPlaylist(video) {
     // add button save to playlist on top video
     const newButtonSaveToPlaylist = document.createElement("button");
     newButtonSaveToPlaylist.classList.add("fmuzik__save-to-playlist--btn");
-    newButtonSaveToPlaylist.addEventListener("click", (e) => saveVideoToPlaylist(e, video.getAttribute("fmuzik_id")));
+    newButtonSaveToPlaylist.addEventListener("click", (e) => saveVideoToPlaylist(e, video));
 
     // insert button on top of video
     if (buttonSaveToPlaylistInMediaViewerMode) {
@@ -866,6 +1027,27 @@ function setupVideos() {
 }
 
 /**
+ * Format link video
+ * @param {string} link 
+ * @returns 
+ */
+function formatLinkVideo(link) {
+  let result = link;
+
+  // https://fpt.workplace.com/100013058827938/videos/1110217093266592/?idorvanity=983546785133426
+  // => https://fpt.workplace.com/100013058827938/videos/1110217093266592
+  result = result.replace(/\/\?[a-zA-Z]+\=.+$/g, '');
+
+  // https://fpt.workplace.com/100013058827938/videos/1110217093266592/
+  // => https://fpt.workplace.com/100013058827938/videos/1110217093266592
+  if (result[result.length - 1] == "/") {
+    result = result.substring(0, result.length - 1);
+  }
+
+  return result;
+}
+
+/**
  * Setup popup save playlist
  */
 function setupPopupPlaylist() {
@@ -904,6 +1086,19 @@ function setupPopupPlaylist() {
 }
 
 /**
+ * 
+ * @param {Event} e 
+ * @param {boolean} isHidden 
+ */
+function togglePlaylistPanel(e, isHidden) {
+  if (isHidden) {
+    playlistPanel.classList.add('hidden');
+  } else {
+    playlistPanel.classList.remove('hidden');
+  }
+}
+
+/**
  * Init FMuzik extension
  */
 function fmuzikInit() {
@@ -936,10 +1131,10 @@ function fmuzikInit() {
           // setup alert
           createAlertElement();
           // Create layout panel
-          // Setup popup playlist
-          setupPopupPlaylist();
           // Setup playlist panel
           createPlaylistPanelElement();
+          // Setup popup playlist
+          setupPopupPlaylist();
         } else {
           if (oldHref != document.location.href) {
             statusInit = false;
