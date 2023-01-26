@@ -263,12 +263,14 @@
   top: 24px;
 }
 .fmuzik-alert-success {
-  background-color: #20c997;
+  background-color: #28a745;
   border: 1px solid #176b2b;
+  color: #fff;
 }
 .fmuzik-alert-danger {
-  background-color: #e95e6c;
+  background-color: #dc3545;
   border: 1px solid #d62436;
+  color: #fff;
 }
 /* Button add to playlist */
 .fmuzik__save-to-playlist--btn {
@@ -293,7 +295,9 @@
   left: 100px;
 }
 
-.fmuzik-popup-playlist:not([class*="d-none"]) ~ .fmuzik-playlist-panel > .fmuzik-playlist-panel--lock {
+.fmuzik-popup-playlist:not([class*="d-none"])
+  ~ .fmuzik-playlist-panel
+  > .fmuzik-playlist-panel--lock {
   width: 100%;
   height: 100%;
   position: absolute;
@@ -369,10 +373,16 @@
   animation: blinker 1.5s linear infinite;
 }
 
-@keyframes blinker {  
-  0% { opacity: 1.0; }
-  50% { opacity: 0.7; }
-  100% { opacity: 1.0; }
+@keyframes blinker {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .fmuzik-popup-playlist {
@@ -395,9 +405,11 @@
   box-shadow: 2px 2px 4px 3px #747474;
 }
 .fmuzik-popup-playlist--close-x {
-  width: 30px;
-  height: 30px;
-  padding: 5px 5px 8px;
+  right: 0;
+  top: 0;
+  border-radius: 0;
+  background-color: #fff;
+  padding: 0px 10px 5px;
   font-size: 18px;
   text-align: center;
   display: flex;
@@ -407,15 +419,15 @@
   border: 1px solid #fff;
   color: #ff3737;
   position: absolute;
-  right: -15px;
-  top: -15px;
+  /* right: -15px;
+  top: -15px; */
   opacity: 0.5;
 }
 .fmuzik-popup-playlist--close-x:hover {
   cursor: pointer;
   opacity: 1;
-  border-color: rgb(255 206 206);
-  box-shadow: -1px 1px 5px 0px #bbbbbb;
+  /* border-color: rgb(255 206 206); */
+  /* box-shadow: -1px 1px 5px 0px #bbbbbb; */
 }
 
 .fmuzik-popup-playlist--spinner-container {
@@ -510,6 +522,21 @@ button.fmuzik-form-btn:hover {
   width: 240px;
   height: 20px;
 }
+.fmuzik-playlist-save-to--video-name
+  input#fmuzik-playlist-video-name::-webkit-calendar-picker-indicator {
+  opacity: 80;
+  top: -4px;
+  right: -6px;
+  padding: 8px 5px;
+  position: relative;
+  /* background-image: none; */
+  /* background-color: #f5f1ec; */
+}
+.fmuzik-playlist-save-to--video-name
+  #fmuzik-playlist-video-name-suggest
+  option:hover {
+  cursor: pointer;
+}
 .fmuzik-playlist-save-to--video-name .fmuzik-form-label {
   margin-right: 10px;
 }
@@ -522,7 +549,7 @@ button.fmuzik-form-btn:hover {
   align-self: flex-end;
 }
 .fmuzik-playlist-save-to--top .fmuzik-form-label {
-  font-size: 20px;
+  font-size: 18px;
 }
 .fmuzik-playlist-save-to--main {
   flex-direction: column;
@@ -559,6 +586,9 @@ button.fmuzik-form-btn:hover {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+}
+.fmuzik-form-checkbox-group:hover > * {
+  cursor: pointer;
 }
 .fmuzik-form-checkbox-group .fmuzik-form-checkbox-input {
   width: 18px;
@@ -604,17 +634,17 @@ button.fmuzik-form-btn:hover {
 }
 /* Track */
 .fmuzik-playlist-panel--container ::-webkit-scrollbar-track {
-  background: #f1f1f1; 
+  background: #f1f1f1;
 }
- 
+
 /* Handle */
 .fmuzik-playlist-panel--container ::-webkit-scrollbar-thumb {
-  background: #888; 
+  background: #888;
 }
 
 /* Handle on hover */
 .fmuzik-playlist-panel--container ::-webkit-scrollbar-thumb:hover {
-  background: #555; 
+  background: #555;
 }
 /** #endregion scroll */
 
@@ -651,7 +681,7 @@ button.fmuzik-form-btn:hover {
 }
 .fmuzik-playlist-panel--player-label {
   height: 20px;
-  font-size: 15px;
+  font-size: 14px;
   margin-top: 5px;
 }
 .fmuzik-playlist-panel--player-not-demand {
@@ -669,14 +699,58 @@ button.fmuzik-form-btn:hover {
 .fmuzik-playlist-panel--list-player.fmuzik-playlist-panel--list-player-video {
   height: calc(100% - 20px - 144px - 10px - 65px - 15px);
 }
+/* #region: Drag and drop */
+/* https://codepen.io/artemveremienko/details/BajdoJO */
+.fmuzik-playlist-panel--list-player.fmuzik-playlist-panel--list-player-video {
+  cursor: default;
+}
+/* .fmuzik-playlist-panel--list-player__tasks {
+  margin: auto;
+}
+
+.fmuzik-playlist-panel--list-player__tasks__title {
+  margin: 50px 0 20px 0;
+  text-align: center;
+  text-transform: uppercase;
+} */
+
+/* .fmuzik-playlist-panel--list-player__tasks__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+} */
+
+.fmuzik-playlist-panel--list-player-video .fmuzik-playlist__item--wrap {
+  /* margin-bottom: 10px; */
+  /* padding: 5px; */
+  /* text-align: center; */
+  /* border: 2px dashed #b2d9d0; */
+  /* border-radius: 10px; */
+  cursor: pointer;
+  /* background-color: #dff2ef; */
+  transition: background-color 0.5s, transform 2s, position 2s;
+}
+
+.fmuzik-playlist-panel--list-player-video
+  .fmuzik-playlist__item--wrap:last-child {
+  /* margin-bottom: 0; */
+}
+
+.fmuzik-playlist-panel--list-player-video
+  .fmuzik-playlist__item--wrap__selected {
+  opacity: 0.6 !important;
+  cursor: pointer !important;
+  transition: background-color 0.5s, transform 2s, position 2s;
+}
+/* #endregion: Drag and drop  */
 .fmuzik-playlist__item--wrap {
-  font-size: 14px;
+  font-size: 13px;
   color: #f0a500;
   padding: 0 30px 0 8px;
   background: #334756;
   margin-bottom: 3px;
   border-radius: 3px;
-  font-weight: 500;
+  font-weight: 400;
   display: flex;
   align-items: center;
   /* overflow: hidden; */
