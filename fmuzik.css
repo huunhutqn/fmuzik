@@ -263,12 +263,14 @@
   top: 24px;
 }
 .fmuzik-alert-success {
-  background-color: #20c997;
+  background-color: #28a745;
   border: 1px solid #176b2b;
+  color: #fff;
 }
 .fmuzik-alert-danger {
-  background-color: #e95e6c;
+  background-color: #dc3545;
   border: 1px solid #d62436;
+  color: #fff;
 }
 /* Button add to playlist */
 .fmuzik__save-to-playlist--btn {
@@ -293,7 +295,9 @@
   left: 100px;
 }
 
-.fmuzik-popup-playlist:not([class*="d-none"]) ~ .fmuzik-playlist-panel > .fmuzik-playlist-panel--lock {
+.fmuzik-popup-playlist:not([class*="d-none"])
+  ~ .fmuzik-playlist-panel
+  > .fmuzik-playlist-panel--lock {
   width: 100%;
   height: 100%;
   position: absolute;
@@ -369,10 +373,16 @@
   animation: blinker 1.5s linear infinite;
 }
 
-@keyframes blinker {  
-  0% { opacity: 1.0; }
-  50% { opacity: 0.7; }
-  100% { opacity: 1.0; }
+@keyframes blinker {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .fmuzik-popup-playlist {
@@ -395,9 +405,11 @@
   box-shadow: 2px 2px 4px 3px #747474;
 }
 .fmuzik-popup-playlist--close-x {
-  width: 30px;
-  height: 30px;
-  padding: 5px 5px 8px;
+  right: 0;
+  top: 0;
+  border-radius: 0;
+  background-color: #fff;
+  padding: 0px 10px 5px;
   font-size: 18px;
   text-align: center;
   display: flex;
@@ -407,15 +419,15 @@
   border: 1px solid #fff;
   color: #ff3737;
   position: absolute;
-  right: -15px;
-  top: -15px;
+  /* right: -15px;
+  top: -15px; */
   opacity: 0.5;
 }
 .fmuzik-popup-playlist--close-x:hover {
   cursor: pointer;
   opacity: 1;
-  border-color: rgb(255 206 206);
-  box-shadow: -1px 1px 5px 0px #bbbbbb;
+  /* border-color: rgb(255 206 206); */
+  /* box-shadow: -1px 1px 5px 0px #bbbbbb; */
 }
 
 .fmuzik-popup-playlist--spinner-container {
@@ -510,6 +522,21 @@ button.fmuzik-form-btn:hover {
   width: 240px;
   height: 20px;
 }
+.fmuzik-playlist-save-to--video-name
+  input#fmuzik-playlist-video-name::-webkit-calendar-picker-indicator {
+  opacity: 80;
+  top: -4px;
+  right: -6px;
+  padding: 8px 5px;
+  position: relative;
+  /* background-image: none; */
+  /* background-color: #f5f1ec; */
+}
+.fmuzik-playlist-save-to--video-name
+  #fmuzik-playlist-video-name-suggest
+  option:hover {
+  cursor: pointer;
+}
 .fmuzik-playlist-save-to--video-name .fmuzik-form-label {
   margin-right: 10px;
 }
@@ -522,7 +549,7 @@ button.fmuzik-form-btn:hover {
   align-self: flex-end;
 }
 .fmuzik-playlist-save-to--top .fmuzik-form-label {
-  font-size: 20px;
+  font-size: 18px;
 }
 .fmuzik-playlist-save-to--main {
   flex-direction: column;
@@ -559,6 +586,9 @@ button.fmuzik-form-btn:hover {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+}
+.fmuzik-form-checkbox-group:hover > * {
+  cursor: pointer;
 }
 .fmuzik-form-checkbox-group .fmuzik-form-checkbox-input {
   width: 18px;
@@ -604,17 +634,17 @@ button.fmuzik-form-btn:hover {
 }
 /* Track */
 .fmuzik-playlist-panel--container ::-webkit-scrollbar-track {
-  background: #f1f1f1; 
+  background: #f1f1f1;
 }
- 
+
 /* Handle */
 .fmuzik-playlist-panel--container ::-webkit-scrollbar-thumb {
-  background: #888; 
+  background: #888;
 }
 
 /* Handle on hover */
 .fmuzik-playlist-panel--container ::-webkit-scrollbar-thumb:hover {
-  background: #555; 
+  background: #555;
 }
 /** #endregion scroll */
 
@@ -629,7 +659,17 @@ button.fmuzik-form-btn:hover {
   box-shadow: 1px 1px 90px 52px #8f8e8c;
 }
 .fmuzik-credit {
-  height: 15px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+}
+.fmuzik-credit > span,
+.fmuzik-credit > svg {
+  flex-shrink: 0;
+}
+.fmuzik-credit > svg {
+  bottom: 2px !important;
+  margin-left: 2px !important;
 }
 .fmuzik-playlist-panel--player,
 .fmuzik-playlist-panel--player-mask,
@@ -651,8 +691,11 @@ button.fmuzik-form-btn:hover {
 }
 .fmuzik-playlist-panel--player-label {
   height: 20px;
-  font-size: 15px;
+  font-size: 14px;
   margin-top: 5px;
+}
+.fmuzik-playlist-panel--player-label span {
+  color: #ffc239;
 }
 .fmuzik-playlist-panel--player-not-demand {
   width: 0px;
@@ -669,14 +712,58 @@ button.fmuzik-form-btn:hover {
 .fmuzik-playlist-panel--list-player.fmuzik-playlist-panel--list-player-video {
   height: calc(100% - 20px - 144px - 10px - 65px - 15px);
 }
+/* #region: Drag and drop */
+/* https://codepen.io/artemveremienko/details/BajdoJO */
+.fmuzik-playlist-panel--list-player.fmuzik-playlist-panel--list-player-video {
+  cursor: default;
+}
+/* .fmuzik-playlist-panel--list-player__tasks {
+  margin: auto;
+}
+
+.fmuzik-playlist-panel--list-player__tasks__title {
+  margin: 50px 0 20px 0;
+  text-align: center;
+  text-transform: uppercase;
+} */
+
+/* .fmuzik-playlist-panel--list-player__tasks__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+} */
+
+.fmuzik-playlist-panel--list-player-video .fmuzik-playlist__item--wrap {
+  /* margin-bottom: 10px; */
+  /* padding: 5px; */
+  /* text-align: center; */
+  /* border: 2px dashed #b2d9d0; */
+  /* border-radius: 10px; */
+  cursor: pointer;
+  /* background-color: #dff2ef; */
+  transition: background-color 0.5s, transform 2s, position 2s;
+}
+
+.fmuzik-playlist-panel--list-player-video
+  .fmuzik-playlist__item--wrap:last-child {
+  /* margin-bottom: 0; */
+}
+
+.fmuzik-playlist-panel--list-player-video
+  .fmuzik-playlist__item--wrap__selected {
+  opacity: 0.6 !important;
+  cursor: pointer !important;
+  transition: background-color 0.5s, transform 2s, position 2s;
+}
+/* #endregion: Drag and drop  */
 .fmuzik-playlist__item--wrap {
-  font-size: 14px;
+  font-size: 13px;
   color: #f0a500;
   padding: 0 30px 0 8px;
   background: #334756;
   margin-bottom: 3px;
   border-radius: 3px;
-  font-weight: 500;
+  font-weight: 400;
   display: flex;
   align-items: center;
   /* overflow: hidden; */
@@ -741,13 +828,15 @@ a.fmuzik-playlist__item:hover {
 .fmuzik-playlist__controls {
   margin-top: 5px;
   margin-right: 20px;
+  display: flex;
 }
 .fmuzik-playlist__controls > button:not(:last-of-type) {
   margin-right: 10px;
 }
 .fmuzik-playlist__controls--back,
 .fmuzik-playlist__controls--prev,
-.fmuzik-playlist__controls--next {
+.fmuzik-playlist__controls--next,
+.fmuzik-playlist__controls--loop-video-once {
   height: 30px;
   width: 30px;
   background: transparent;
@@ -758,19 +847,370 @@ a.fmuzik-playlist__item:hover {
 }
 .fmuzik-playlist__controls--back:hover,
 .fmuzik-playlist__controls--prev:hover,
-.fmuzik-playlist__controls--next:hover {
+.fmuzik-playlist__controls--next:hover,
+.fmuzik-playlist__controls--loop-video-once:hover {
   cursor: pointer;
   color: #ffd985;
 }
 .fmuzik-playlist__controls--back:focus,
 .fmuzik-playlist__controls--prev:focus,
-.fmuzik-playlist__controls--next:focus {
+.fmuzik-playlist__controls--next:focus,
+.fmuzik-playlist__controls--loop-video-once:focus {
   outline: none;
 }
 .fmuzik-playlist__controls--back {
-  flex-grow: 1;
+  /* flex-grow: 1; */
 }
 .fmuzik-playlist__controls--prev {
 }
 .fmuzik-playlist__controls--next {
 }
+.fmuzik-playlist__controls--loop-video-once {
+  fill: #78756d;
+  /* opacity: 0.8; */
+}
+.fmuzik-playlist__controls--loop-video-once:hover {
+  /* opacity: 1; */
+}
+.fmuzik-playlist__controls--loop-video-once:hover svg {
+  fill: #ffd985 !important;
+}
+.fmuzik-playlist__controls--loop-video-once__active svg {
+  fill: #ffcd00;
+}
+
+/* #region Katty */
+.fmuzik__katty__wrapper {
+  position: absolute;
+  /* height: calc(100vh - 100px); */
+  width: 100%;
+  /* top: 0; */
+  height: 30px;
+  /* bottom: 0; */
+  /* top: auto; */
+  transform: scale(0.3);
+  position: relative;
+  flex-grow: 1;
+  flex-basis: auto;
+}
+
+.fmuzik__katty__cat_wrapper.fmuzik__katty__jump {
+  /* transform: scale(0.38); */
+}
+
+.fmuzik__katty__ground {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 150px;
+  background-color: rgb(1, 143, 96);
+}
+
+.fmuzik__katty__cat {
+  position: absolute;
+  /* bottom: 65px; */
+  /* left: 100px; */
+  height: 30px;
+  width: 60px;
+  transition: 1.5s;
+  transform-origin: center;
+  background-color: transparent;
+  /* transform: scale(0.3); */
+  bottom: -6px;
+  /* left: 147px; */
+  left: 338px;
+}
+
+/* .fmuzik__katty__jump .fmuzik__katty__cat {
+  transform: scale(0.3);
+} */
+
+.fmuzik__katty__cat:hover {
+  cursor: pointer;
+  animation: infinite 0.5s fmuzik__katty__walk;
+}
+
+/* body */
+
+.fmuzik__katty__body {
+  position: absolute;
+  height: 30px;
+  width: 60px;
+}
+
+.fmuzik__katty__face_left .body {
+  animation: fmuzik__katty__turn_body_left forwards 0.5s;
+}
+
+@keyframes fmuzik__katty__turn_body_left {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.5, 1);
+  }
+}
+
+.fmuzik__katty__face_right .body {
+  animation: fmuzik__katty__turn_body_right forwards 0.5s;
+}
+
+@keyframes fmuzik__katty__turn_body_right {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.5, 1);
+  }
+}
+
+/* head */
+.fmuzik__katty__cat_head {
+  position: absolute;
+  height: 40px;
+  width: 48px;
+  right: -10px;
+  top: -30px;
+  transition: 0.5s;
+  z-index: 50;
+}
+
+.fmuzik__katty__first_pose .fmuzik__katty__cat_head,
+.fmuzik__katty__face_left .fmuzik__katty__cat_head {
+  right: 22px;
+}
+
+/* tail */
+.fmuzik__katty__tail {
+  position: absolute;
+  top: -25px;
+  height: 36px;
+  width: 15px;
+  animation: fmuzik__katty__tail_motion forwards 2s;
+  transform-origin: bottom right;
+}
+
+@keyframes fmuzik__katty__tail_motion {
+  0%,
+  100% {
+    left: -5px;
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    left: -10px;
+    transform: rotate(-50deg) scale(-1, 1);
+  }
+}
+
+.fmuzik__katty__first_pose .fmuzik__katty__tail,
+.fmuzik__katty__face_left .fmuzik__katty__tail {
+  left: 45px;
+  animation: fmuzik__katty__tail_motion_alt forwards 2s;
+}
+
+@keyframes fmuzik__katty__tail_motion_alt {
+  0%,
+  100% {
+    left: 45px;
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    left: 40px;
+    transform: rotate(50deg) scale(-1, 1);
+  }
+}
+
+/* legs */
+.fmuzik__katty__leg {
+  position: absolute;
+  height: 20px;
+  width: 10px;
+  transform-origin: top center;
+}
+
+.fmuzik__katty__front_legs,
+.fmuzik__katty__back_legs {
+  position: absolute;
+  height: 30px;
+  transition: 0.7s;
+}
+
+.fmuzik__katty__front_legs {
+  width: 30px;
+  right: 0;
+}
+
+.fmuzik__katty__back_legs {
+  width: 25px;
+  left: 0;
+}
+
+.fmuzik__katty__face_left .fmuzik__katty__leg svg {
+  transform: scale(-1, 1);
+}
+
+.fmuzik__katty__face_right .fmuzik__katty__front_legs {
+  right: 0;
+}
+
+.fmuzik__katty__first_pose .fmuzik__katty__front_legs,
+.fmuzik__katty__face_left .fmuzik__katty__front_legs {
+  right: 30px;
+}
+
+.fmuzik__katty__face_right .fmuzik__katty__back_legs {
+  left: 0;
+}
+
+.fmuzik__katty__first_pose .fmuzik__katty__back_legs,
+.fmuzik__katty__face_left .fmuzik__katty__back_legs {
+  left: 35px;
+}
+
+.fmuzik__katty__one,
+.fmuzik__katty__three {
+  bottom: -15px;
+  right: 0;
+}
+
+.fmuzik__katty__two,
+.fmuzik__katty__four {
+  bottom: -15px;
+  left: 0px;
+}
+
+.fmuzik__katty__one.fmuzik__katty__walk,
+.fmuzik__katty__three.fmuzik__katty__walk {
+  animation: infinite 0.3s fmuzik__katty__walk;
+}
+
+.fmuzik__katty__two.fmuzik__katty__walk,
+.fmuzik__katty__four.fmuzik__katty__walk {
+  animation: infinite 0.3s fmuzik__katty__walk_alt;
+}
+
+@keyframes fmuzik__katty__walk {
+  0%,
+  100% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+}
+
+@keyframes fmuzik__katty__walk_alt {
+  0%,
+  100% {
+    transform: rotate(10deg);
+  }
+  50% {
+    transform: rotate(-10deg);
+  }
+}
+
+/* jump */
+.fmuzik__katty__cat_wrapper {
+  position: absolute;
+  bottom: 0;
+}
+
+.fmuzik__katty__cat_wrapper.fmuzik__katty__jump .fmuzik__katty__one {
+  animation: infinite 0.3s fmuzik__katty__walk;
+}
+
+.fmuzik__katty__cat_wrapper.fmuzik__katty__jump .fmuzik__katty__two {
+  animation: infinite 0.3s fmuzik__katty__walk_alt;
+}
+
+.fmuzik__katty__cat_wrapper.fmuzik__katty__jump .fmuzik__katty__three,
+.fmuzik__katty__cat_wrapper.fmuzik__katty__jump .fmuzik__katty__four {
+  animation: none;
+}
+
+.fmuzik__katty__cat_wrapper.fmuzik__katty__jump
+  .fmuzik__katty__cat.fmuzik__katty__face_right
+  .fmuzik__katty__back_legs {
+  transform-origin: center;
+  transform: rotate(50deg);
+}
+
+.fmuzik__katty__cat_wrapper.fmuzik__katty__jump
+  .fmuzik__katty__cat.fmuzik__katty__face_left
+  .fmuzik__katty__back_legs {
+  transform-origin: center;
+  transform: rotate(-50deg);
+}
+
+.fmuzik__katty__cat_wrapper.fmuzik__katty__jump
+  .fmuzik__katty__cat.fmuzik__katty__face_right
+  .fmuzik__katty__front_legs {
+  transform-origin: center;
+  transform: rotate(-60deg);
+}
+
+.fmuzik__katty__cat_wrapper.fmuzik__katty__jump
+  .fmuzik__katty__cat.fmuzik__katty__face_left
+  .fmuzik__katty__front_legs {
+  transform-origin: center;
+  transform: rotate(60deg);
+}
+
+.fmuzik__katty__cat_wrapper.fmuzik__katty__jump {
+  animation: fmuzik__katty__jump forwards 1s;
+}
+
+@keyframes fmuzik__katty__jump {
+  0%,
+  100% {
+    bottom: 0px;
+  }
+  50% {
+    bottom: 100px;
+  }
+}
+
+.fmuzik__katty__jump .fmuzik__katty__face_left {
+  animation: forwards 0.5s fmuzik__katty__body_stand_left;
+  transform-origin: right bottom;
+}
+
+.fmuzik__katty__jump .fmuzik__katty__face_right {
+  animation: forwards 0.5s fmuzik__katty__body_stand_right;
+  transform-origin: left bottom;
+}
+
+@keyframes fmuzik__katty__body_stand_right {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-45deg);
+  }
+}
+
+@keyframes fmuzik__katty__body_stand_left {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(45deg);
+  }
+}
+
+.fmuzik__katty__wrapper svg {
+  height: 100%;
+  width: 100%;
+}
+
+.fmuzik__katty__wrapper polygon.fmuzik__katty__eyes {
+  fill: rgb(1, 143, 96);
+}
+
+.fmuzik__katty__wrapper polygon,
+.fmuzik__katty__wrapper path {
+  fill: white;
+}
+/* #endregion Katty */
