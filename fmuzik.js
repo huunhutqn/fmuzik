@@ -1289,27 +1289,38 @@ function setupVideos() {
     ? geminiLayoutEntity.querySelector("[role=feed]")
     : null;
 
-  const searchMode = document.location.pathname.match("/search/");
+  const isSearchMode = document.location.pathname.match("/search/");
+  // ex personal wall: https://fpt.workplace.com/profile.php?id=900048619999981
+  const isPersonalWall = document.location.pathname.match("/profile.php?");
+
+  const singelVideoViewer = document.querySelector("[data-pagelet=TahoeVideo]");
+  const albumnViewer = document.querySelector(
+    "[data-name=media-viewer-nav-container]"
+  );
 
   // normal video in newsfeed
   let videos = feed ? feed.querySelectorAll("video") : [];
 
-  if (document.querySelector("[data-name=media-viewer-nav-container]")) {
+  if (albumnViewer) {
     // albumn viewer
-
+    // log("albumnViewer: ", albumnViewer);
     videos = document
       .querySelector("[data-name=media-viewer-nav-container]")
       .nextElementSibling.querySelectorAll("video");
-  } else if (document.querySelector("[data-pagelet=TahoeVideo]")) {
+  } else if (singelVideoViewer) {
     // single video viewer
+    // log("singelVideoViewer: ", singelVideoViewer);
     videos = document
       .querySelector("[data-pagelet=TahoeVideo]")
       .querySelectorAll("video");
-  } else if (geminiLayoutEntity && searchMode) {
-    // Search mode
+  } else if (geminiLayoutEntity && (isSearchMode || isPersonalWall)) {
+    // Search mode or Personal wall
+    // log("isSearchMode: ", isSearchMode);
+    // log("isPersonalWall: ", isPersonalWall);
     const geminiLayoutEntityTmp = document.querySelectorAll(
       "[data-pagelet=GeminiLayoutEntity]"
     );
+    log("geminiLayoutEntityTmp: ", geminiLayoutEntityTmp);
     if (geminiLayoutEntityTmp.length == 2) {
       // After enter search action
       videos = geminiLayoutEntityTmp[1].querySelectorAll("video");
@@ -1673,7 +1684,7 @@ function fmuzikInit() {
           oldHref == document.location.href &&
           checkStartCondition()
         ) {
-          // Trigger anything in DOM changed
+          // Trigger when anything in DOM changed
           // Setup videos
           setupVideos();
           if (playlistPanel && playlistPanel.classList.contains("d-none")) {
