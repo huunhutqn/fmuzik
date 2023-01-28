@@ -1,13 +1,22 @@
 const defaultWorkplaceUrl = "https://fpt.workplace.com/groups/muzikinmymind";
 const defaultWorkplaceUrl1 = "https://fpt.workplace.com/groups/983546785133426";
-const iframeHosts = ["*fpt.workplace.com*", "*fpt.m.workplace.com*", "https://fpt.workplace.com"];
+const iframeHosts = [
+  "*fpt.workplace.com*",
+  "*fpt.m.workplace.com*",
+  "https://fpt.workplace.com",
+];
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.get("workplaceUrl", (data) => {
+    const fmuzikData = { ...data };
     if (!data || !data.workplaceUrl || data.workplaceUrl.length == 0) {
-      chrome.storage.sync.set({ workplaceUrl: [defaultWorkplaceUrl, defaultWorkplaceUrl1] });
+      fmuzikData.workplaceUrl = [defaultWorkplaceUrl, defaultWorkplaceUrl1];
     }
-    chrome.storage.sync.set({ active: true, fmuzikEverywhere: true, activePlaylist: true, loopEnabled: true });
+    fmuzikData.active = true;
+    fmuzikData.fmuzikEverywhere = true;
+    fmuzikData.activePlaylist = true;
+    fmuzikData.loopEnabled = true;
+    chrome.storage.sync.set(fmuzikData);
   });
 
   chrome.action.onClicked.addListener((tab) => {
@@ -41,7 +50,12 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 
   //https://stackoverflow.com/questions/15532791/getting-around-x-frame-options-deny-in-a-chrome-extension/69177790#69177790
-  const iframeHosts = ["fpt.workplace.com", "fpt.m.workplace.com", "fbcdn.net", "https://fpt.workplace.com"];
+  const iframeHosts = [
+    "fpt.workplace.com",
+    "fpt.m.workplace.com",
+    "fbcdn.net",
+    "https://fpt.workplace.com",
+  ];
   chrome.declarativeNetRequest.updateDynamicRules({
     removeRuleIds: iframeHosts.map((h, i) => i + 1),
     addRules: iframeHosts.map((h, i) => ({

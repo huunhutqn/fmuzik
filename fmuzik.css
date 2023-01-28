@@ -684,6 +684,9 @@ button.fmuzik-form-btn:hover {
   font-size: 14px;
   margin-top: 5px;
 }
+.fmuzik-playlist-panel--player-label span {
+  color: #ffc239;
+}
 .fmuzik-playlist-panel--player-not-demand {
   width: 0px;
   height: 0px;
@@ -815,13 +818,15 @@ a.fmuzik-playlist__item:hover {
 .fmuzik-playlist__controls {
   margin-top: 5px;
   margin-right: 20px;
+  display: flex;
 }
 .fmuzik-playlist__controls > button:not(:last-of-type) {
   margin-right: 10px;
 }
 .fmuzik-playlist__controls--back,
 .fmuzik-playlist__controls--prev,
-.fmuzik-playlist__controls--next {
+.fmuzik-playlist__controls--next,
+.fmuzik-playlist__controls--loop-video-once {
   height: 30px;
   width: 30px;
   background: transparent;
@@ -832,19 +837,34 @@ a.fmuzik-playlist__item:hover {
 }
 .fmuzik-playlist__controls--back:hover,
 .fmuzik-playlist__controls--prev:hover,
-.fmuzik-playlist__controls--next:hover {
+.fmuzik-playlist__controls--next:hover,
+.fmuzik-playlist__controls--loop-video-once:hover {
   cursor: pointer;
   color: #ffd985;
 }
 .fmuzik-playlist__controls--back:focus,
 .fmuzik-playlist__controls--prev:focus,
-.fmuzik-playlist__controls--next:focus {
+.fmuzik-playlist__controls--next:focus,
+.fmuzik-playlist__controls--loop-video-once:focus {
   outline: none;
 }
 .fmuzik-playlist__controls--back {
-  flex-grow: 1;
+  /* flex-grow: 1; */
 }
 .fmuzik-playlist__controls--prev {
 }
 .fmuzik-playlist__controls--next {
+}
+.fmuzik-playlist__controls--loop-video-once {
+  fill: #78756d;
+  /* opacity: 0.8; */
+}
+.fmuzik-playlist__controls--loop-video-once:hover {
+  /* opacity: 1; */
+}
+.fmuzik-playlist__controls--loop-video-once:hover svg {
+  fill: #ffd985 !important;
+}
+.fmuzik-playlist__controls--loop-video-once__active svg {
+  fill: #ffcd00;
 }

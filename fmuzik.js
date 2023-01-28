@@ -9,7 +9,7 @@ let fmuzikEverywhere = false;
 let workplaceUrls = [];
 let playlist = [];
 // example:
-// {id: string, name: string, videos: [{name: string, url: string}]}
+// {id: string, name: string, videos: [{name: string, url: string, articleUrl: string}]}
 // [
 //   {
 //     id: "fmuzikp123",
@@ -17,7 +17,8 @@ let playlist = [];
 //     videos: [
 //       {
 //         name: "12345",
-//         url: 'http://...'
+//         url: 'http://...',
+//         articleUrl: 'http://...',
 //       }
 //     ]
 //   }
@@ -50,6 +51,7 @@ const MSG = {
 let currentPlaylistPlayer = [];
 let currentPlaylistId = -1;
 let currentIndexPlaylistVideo = -1;
+let isLoopPlaylistVideoOnce = false;
 
 const modeDev = true;
 
@@ -335,8 +337,16 @@ function getContentsOfPostByVideoEl(video) {
   const parentHasId = video?.closest("div[id]");
   if (parentHasId) {
     log(parentHasId);
-    const prevSibling = parentHasId.previousElementSibling;
-    const prevSiblingAttrDir = prevSibling?.getAttribute("dir");
+    let prevSibling = parentHasId.previousElementSibling;
+    let prevSiblingAttrDir = prevSibling?.getAttribute("dir");
+
+    if (!prevSiblingAttrDir) {
+      // Try get prev sibling other (section new/latest posts on top of group)
+      // Or post have translationable
+      prevSibling = prevSibling.previousElementSibling?.firstElementChild;
+      prevSiblingAttrDir = prevSibling?.getAttribute("dir");
+    }
+
     if (prevSibling && prevSiblingAttrDir && prevSiblingAttrDir == "auto") {
       log(prevSibling);
       const prevSiblingSpanElArr = prevSibling.querySelectorAll("span");
@@ -544,6 +554,7 @@ function createNewPlaylist(fmuzik_id) {
             {
               url: video.getAttribute("fmuzik_video_url"),
               name: inputVideoName.value,
+              articleUrl: video.getAttribute("fmuzik_video_article_url"),
             },
           ],
         };
@@ -687,8 +698,13 @@ function playVideo(url, index) {
     };
 
     video.addEventListener("ended", (e) => {
-      // next video
-      nextVideo(e);
+      if (isLoopPlaylistVideoOnce) {
+        // Loop video
+        video.play();
+      } else {
+        // next video
+        nextVideo(e);
+      }
     });
   });
 }
@@ -761,6 +777,7 @@ function createControlsPlayerElement() {
   const controls = document.createElement("div");
   controls.classList.add("fmuzik-playlist__controls");
 
+  // Back list video of playlist to list of playlist
   const backToPlaylistBtn = document.createElement("button");
   backToPlaylistBtn.classList.add("fmuzik-playlist__controls--back");
   backToPlaylistBtn.innerHTML = `
@@ -768,6 +785,7 @@ function createControlsPlayerElement() {
   `;
   backToPlaylistBtn.addEventListener("click", (e) => backToPlaylist(e));
 
+  // Previous to a video in current playlist
   const prevBtn = document.createElement("button");
   prevBtn.classList.add("fmuzik-playlist__controls--prev");
   prevBtn.innerHTML = `
@@ -775,6 +793,7 @@ function createControlsPlayerElement() {
   `;
   prevBtn.addEventListener("click", (e) => prevVideo(e));
 
+  // Next to a video in current playlist
   const nextBtn = document.createElement("button");
   nextBtn.classList.add("fmuzik-playlist__controls--next");
   nextBtn.innerHTML = `
@@ -782,9 +801,29 @@ function createControlsPlayerElement() {
   `;
   nextBtn.addEventListener("click", (e) => nextVideo(e));
 
+  // Loop current video in current playlist
+  const loopPlaylistVideoOnceBtn = document.createElement("button");
+  loopPlaylistVideoOnceBtn.classList.add(
+    "fmuzik-playlist__controls--loop-video-once"
+  );
+  loopPlaylistVideoOnceBtn.title = "Repeat one";
+  if (isLoopPlaylistVideoOnce) {
+    loopPlaylistVideoOnceBtn.classList.add(
+      "fmuzik-playlist__controls--loop-video-once__active"
+    );
+  }
+  loopPlaylistVideoOnceBtn.innerHTML = `
+    <svg height="28" viewBox="0 0 24 24" width="28" xmlns="http://www.w3.org/2000/svg"><g id="_08" data-name="08"><path d="m22 12a10 10 0 1 0 -16.76 7.37 1 1 0 0 0 .67.26 1 1 0 0 0 .74-.32 1 1 0 0 0 -.06-1.42 8 8 0 1 1 12.41-1.99l-.88-.59-.27 4.18 3.76-1.85-.98-.64a10 10 0 0 0 1.37-5z"/><path d="m14 19h-1v-11a1 1 0 0 0 -1.45-.89l-2 1a1 1 0 1 0 .9 1.78l.55-.27v9.38h-1a1 1 0 0 0 0 2h4a1 1 0 0 0 0-2z"/></g></svg>
+  `;
+  loopPlaylistVideoOnceBtn.addEventListener("click", (e) =>
+    loopPlaylistVideo(e)
+  );
+
+  // Add controls to UI
   controls.appendChild(backToPlaylistBtn);
   controls.appendChild(prevBtn);
   controls.appendChild(nextBtn);
+  controls.appendChild(loopPlaylistVideoOnceBtn);
 
   return controls;
 }
@@ -887,8 +926,31 @@ function deletePlaylist(e, playlistId, index) {
 }
 
 /**
+ * loopPlaylistVideo
+ * @description Toggle loop current playlist video playing
+ */
+function loopPlaylistVideo(e) {
+  isLoopPlaylistVideoOnce = !isLoopPlaylistVideoOnce;
+  const loopPlaylistVideoOnceBtnEl = document.querySelector(
+    ".fmuzik-playlist__controls--loop-video-once"
+  );
+  if (!loopPlaylistVideoOnceBtnEl) {
+    return;
+  }
+  if (isLoopPlaylistVideoOnce) {
+    loopPlaylistVideoOnceBtnEl.classList.add(
+      "fmuzik-playlist__controls--loop-video-once__active"
+    );
+  } else {
+    loopPlaylistVideoOnceBtnEl.classList.remove(
+      "fmuzik-playlist__controls--loop-video-once__active"
+    );
+  }
+}
+
+/**
  * Create list videos
- * @param {{id: string, name: string, videos: [{name: string, url: string}]}} playlist
+ * @param {{id: string, name: string, videos: [{name: string, url: string, articleUrl: string}]}} playlist
  */
 function createListVideosElement(playlist) {
   currentIndexPlaylistVideo = -1;
@@ -900,7 +962,7 @@ function createListVideosElement(playlist) {
     playlist.videos && playlist.videos.length > 0 ? playlist.videos : [];
   listPlayer.innerHTML = "";
   const label = document.querySelector(".fmuzik-playlist-panel--player-label");
-  label.innerText = `Playlist ${playlist.name}:`;
+  label.innerHTML = `Playlist <span>${playlist.name}</span>:`;
   label.insertAdjacentElement("beforebegin", createControlsPlayerElement());
   if (videos.length > 0) {
     currentPlaylistPlayer = videos;
@@ -913,6 +975,10 @@ function createListVideosElement(playlist) {
       video.setAttribute("fmuzik_playlist_video_id", index);
       video.setAttribute("fmuzik_playlist_video_url", element.url);
       video.setAttribute("fmuzik_playlist_video_name", element.name);
+      video.setAttribute(
+        "fmuzik_playlist_video_article_url",
+        element.articleUrl
+      );
       video.innerHTML = `<span title="${element.name}">${element.name}</span>`;
       video.addEventListener("click", (e) =>
         selectVideo(e, element, index, playlist.id)
@@ -1111,7 +1177,7 @@ function createPlaylistPanelElement() {
 
     const credit = document.createElement("div");
     credit.classList.add("row", "text-right", "text-muted", "fmuzik-credit");
-    credit.innerHTML = `FMuzik by NhutTH4 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" xmlns:v="https://vecta.io/nano" style="position: relative;bottom: -4px;fill: #fff;"><path d="M10 22a8 8 0 1 1 0-16 8 8 0 1 1 0 16zm0-2a6 6 0 1 0 0-12 6 6 0 1 0 0 12zm3-5a3 3 0 1 1-6 0h6zm-5-2a1 1 0 1 0 0-2 1 1 0 1 0 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 1 1 0 2zm6.625-5c-.827-.18-3.375-1.59-3.375-4.125 0-1.036.839-1.875 1.875-1.875a1.87 1.87 0 0 1 1.5.75 1.87 1.87 0 0 1 1.5-.75C21.161 2 22 2.839 22 3.875 22 6.41 19.452 7.82 18.625 8z" fill-rule="evenodd"></path></svg>`;
+    credit.innerHTML = `<span>FMuzik by NhutTH4</span> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" xmlns:v="https://vecta.io/nano" style="position: relative;bottom: -4px;fill: #fff;"><path d="M10 22a8 8 0 1 1 0-16 8 8 0 1 1 0 16zm0-2a6 6 0 1 0 0-12 6 6 0 1 0 0 12zm3-5a3 3 0 1 1-6 0h6zm-5-2a1 1 0 1 0 0-2 1 1 0 1 0 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 1 1 0 2zm6.625-5c-.827-.18-3.375-1.59-3.375-4.125 0-1.036.839-1.875 1.875-1.875a1.87 1.87 0 0 1 1.5.75 1.87 1.87 0 0 1 1.5-.75C21.161 2 22 2.839 22 3.875 22 6.41 19.452 7.82 18.625 8z" fill-rule="evenodd"></path></svg>`;
     playlistPanelContainer.appendChild(credit);
 
     playlistPanel.appendChild(playlistPanelContainer);
@@ -1364,6 +1430,8 @@ function setupVideos() {
     setupLoopVideos(video);
     /** setup save to playlist */
     setupSaveToPlaylist(video);
+    // Get URL post of video
+    getUrlPostOfVideo(video);
   });
 }
 
@@ -1386,6 +1454,61 @@ function formatLinkVideo(link) {
   }
 
   return result;
+}
+
+/**
+ * getUrlPostOfVideo
+ * @description Get URL post of video in a article
+ * @param {HTMLVideoElement} video
+ */
+function getUrlPostOfVideo(video) {
+  if (video.getAttribute("fmuzik_video_article_url")) {
+    return;
+  }
+
+  const articleElOfThisVideo = video.closest("div[role=article]");
+  if (!articleElOfThisVideo) {
+    return;
+  }
+
+  let links = articleElOfThisVideo.querySelectorAll("a[role=link]");
+  if (!links || links.length === 0) {
+    return;
+  }
+
+  const newLinks = [];
+  for (let index = 0; index < links.length; index++) {
+    /**
+     * <a role="link" aria-label="publish date" href="https://fpt.workplace.com/groups/muzikinmymind/posts/2473074802847276/" ...>
+     *  <span>publish date</span>
+     * </a>
+     */
+    const link = links[index];
+    if (
+      link.childElementCount === 1 &&
+      link.firstElementChild.tagName.toLowerCase() == "span" &&
+      link.ariaLabel == link.outerText
+    ) {
+      newLinks.push(link);
+    }
+  }
+  if (!newLinks || newLinks.length === 0) {
+    return;
+  }
+  links = newLinks;
+  if (links.length > 1) {
+    // Hmm, can't find exactly
+    return;
+  }
+
+  video.setAttribute(
+    "fmuzik_video_article_url",
+    formatLinkVideo(links[0].href)
+  );
+  log("BEGIN: link article of video:");
+  log(video);
+  log(links);
+  log("END: link article of video");
 }
 
 /**

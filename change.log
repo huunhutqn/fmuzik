@@ -1,14 +1,15 @@
-4.0 - 2022/09/05:
+5.0 - 2023/03/03:
+  - Feature: TODO: Import/Export, share playlist (anhpn6)
+  - Feature: TODO: Filter video of playlist (taitt7)
+  - Feature: TODO: Add all videos in a post to playlist
+
+4.0 - 2023/01/28:
   - Fix: Improve UI/UX
-  - Fix: TODO: Lost data when upgrade new version (trungld7)
+  - Fix: Lost data when upgrade new version (trungld7)
   - Fix: FMuzik Everywhere: personal wall (tuannt44)
   - Feature: Suggest playlist video name by video contents (anhnd28)
   - Feature: Drag to re-order playlist (anhnd28)
-  - Feature: TODO: Import/Export, share playlist (anhpn6)
-  - Feature: TODO: Filter video of playlist (taitt7)
-  - Feature: TODO: Loop current video(playlist playing)
-  - Feature: TODO: Add all videos in a post to playlist
-  - Update: ...
+  - Feature: Loop current video(playlist playing)
 
 3.0 - 2022/09/02:
   - Feature: Minimize (thank sontlc)
