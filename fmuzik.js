@@ -53,7 +53,7 @@ let currentPlaylistId = -1;
 let currentIndexPlaylistVideo = -1;
 let isLoopPlaylistVideoOnce = false;
 
-const modeDev = true;
+const modeDev = false;
 
 //#region declear function
 
@@ -1177,7 +1177,62 @@ function createPlaylistPanelElement() {
 
     const credit = document.createElement("div");
     credit.classList.add("row", "text-right", "text-muted", "fmuzik-credit");
-    credit.innerHTML = `<span>FMuzik by NhutTH4</span> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" xmlns:v="https://vecta.io/nano" style="position: relative;bottom: -4px;fill: #fff;"><path d="M10 22a8 8 0 1 1 0-16 8 8 0 1 1 0 16zm0-2a6 6 0 1 0 0-12 6 6 0 1 0 0 12zm3-5a3 3 0 1 1-6 0h6zm-5-2a1 1 0 1 0 0-2 1 1 0 1 0 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 1 1 0 2zm6.625-5c-.827-.18-3.375-1.59-3.375-4.125 0-1.036.839-1.875 1.875-1.875a1.87 1.87 0 0 1 1.5.75 1.87 1.87 0 0 1 1.5-.75C21.161 2 22 2.839 22 3.875 22 6.41 19.452 7.82 18.625 8z" fill-rule="evenodd"></path></svg>`;
+    credit.innerHTML = `<span>FMuzik by NhutTH4</span> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" xmlns:v="https://vecta.io/nano" style="position: relative;bottom: -4px;fill: #fff;"><path d="M10 22a8 8 0 1 1 0-16 8 8 0 1 1 0 16zm0-2a6 6 0 1 0 0-12 6 6 0 1 0 0 12zm3-5a3 3 0 1 1-6 0h6zm-5-2a1 1 0 1 0 0-2 1 1 0 1 0 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 1 1 0 2zm6.625-5c-.827-.18-3.375-1.59-3.375-4.125 0-1.036.839-1.875 1.875-1.875a1.87 1.87 0 0 1 1.5.75 1.87 1.87 0 0 1 1.5-.75C21.161 2 22 2.839 22 3.875 22 6.41 19.452 7.82 18.625 8z" fill-rule="evenodd"></path></svg>
+    <!-- https://codepen.io/Ma5a/pen/BapbQam -->
+    <div class="fmuzik__katty__wrapper">
+      <div class="fmuzik__katty__cat_wrapper">
+        <div class="fmuzik__katty__cat fmuzik__katty__first_pose">
+          <div class="fmuzik__katty__cat_head">
+            <svg x="0px" y="0px" width="100%" height="100%" viewBox="0 0 76.4 61.2" >
+              <polygon class="fmuzik__katty__eyes" points="63.8,54.1 50.7,54.1 50.7,59.6 27.1,59.6 27.1,54.1 12.4,54.1 12.4,31.8 63.8,31.8 "/>
+              <path d="M15.3,45.9h5.1V35.7h-5.1C15.3,35.7,15.3,45.9,15.3,45.9z M45.8,56.1V51H30.6v5.1H45.8z M61.1,35.7H56v10.2h5.1
+                V35.7z M10.2,61.2v-5.1H5.1V51H0V25.5h5.1V15.3h5.1V5.1h5.1V0h5.1v5.1h5.1v5.1h5.1v5.1c0,0,15.2,0,15.2,0v-5.1h5.1V5.1H56V0h5.1v5.1
+                h5.1v10.2h5.1v10.2h5.1l0,25.5h-5.1v5.1h-5.1v5.1H10.2z"/>
+            </svg>
+
+          </div>
+          <div class="fmuzik__katty__body">
+            <svg x="0px" y="0px" width="100%" height="100%" viewBox="0 0 91.7 40.8" >
+              <path class="fmuzik__katty__st0" d="M91.7,40.8H0V10.2h5.1V5.1h5.1V0h66.2v5.1h10.2v5.1h5.1L91.7,40.8z"/>
+            </svg>
+
+            <div class="fmuzik__katty__tail">
+              <svg x="0px" y="0px" width="100%" height="100%" viewBox="0 0 25.5 61.1" >
+                <polygon class="fmuzik__katty__st0" points="10.2,56 10.2,50.9 5.1,50.9 5.1,40.7 0,40.7 0,20.4 5.1,20.4 5.1,10.2 10.2,10.2 10.2,5.1 15.3,5.1 
+                  15.3,0 25.5,0 25.5,10.2 20.4,10.2 20.4,15.3 15.3,15.3 15.3,20.4 10.2,20.4 10.2,40.7 15.3,40.7 15.3,45.8 20.4,45.8 20.4,50.9 
+                  25.5,50.9 25.5,61.1 15.3,61.1 15.3,56 "/>
+              </svg>
+            </div>
+          </div>
+          
+          <div class="fmuzik__katty__front_legs">
+            <div class="fmuzik__katty__leg fmuzik__katty__one">
+              <svg x="0px" y="0px" width="100%" height="100%" viewBox="0 0 14 30.5" >
+                <polygon points="15.3,30.5 5.1,30.5 5.1,25.4 0,25.4 0,0 15.3,0 "/>
+              </svg>
+            </div>
+            <div class="fmuzik__katty__leg fmuzik__katty__two">
+              <svg x="0px" y="0px" width="100%" height="100%" viewBox="0 0 14 30.5" >
+                <polygon points="15.3,30.5 5.1,30.5 5.1,25.4 0,25.4 0,0 15.3,0 "/>
+              </svg>
+            </div>  
+          </div>
+          
+          <div class="fmuzik__katty__back_legs">
+            <div class="fmuzik__katty__leg fmuzik__katty__three">
+              <svg x="0px" y="0px" width="100%" height="100%" viewBox="0 0 14 30.5" >
+                <polygon points="15.3,30.5 5.1,30.5 5.1,25.4 0,25.4 0,0 15.3,0 "/>
+              </svg>
+            </div>
+            <div class="fmuzik__katty__leg fmuzik__katty__four">
+              <svg x="0px" y="0px" width="100%" height="100%" viewBox="0 0 14 30.5" >
+                <polygon points="15.3,30.5 5.1,30.5 5.1,25.4 0,25.4 0,0 15.3,0 "/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
     playlistPanelContainer.appendChild(credit);
 
     playlistPanel.appendChild(playlistPanelContainer);
@@ -1185,6 +1240,20 @@ function createPlaylistPanelElement() {
     body.insertAdjacentElement("afterbegin", playlistPanel);
     // create playlist items element
     createPlaylistItems();
+
+    let isKattyActive = false;
+    document
+      .querySelector(".fmuzik__katty__cat")
+      .addEventListener("click", (e) => {
+        log("clicked");
+        // Stop active katty from second click to last
+        if (isKattyActive) {
+          return;
+        }
+
+        isKattyActive = true;
+        kattyInit();
+      });
   } else if (!activePlaylist && body && playlistPanel) {
     playlistPanel.innerHTML = "";
   }
@@ -1749,6 +1818,115 @@ function togglePlaylistPanel(e, isHidden) {
   } else {
     playlistPanel.classList.remove("hidden");
   }
+}
+
+/**
+ * kattyInit
+ * @description Hidden feature
+ * @link https://codepen.io/Ma5a/pen/BapbQam
+ */
+function kattyInit() {
+  log("kattyInit");
+  const catWrapper = document.querySelector(".fmuzik__katty__cat_wrapper");
+  const wrapper = document.querySelector(".fmuzik__katty__wrapper");
+  const cat = document.querySelector(".fmuzik__katty__cat");
+  const head = document.querySelector(".fmuzik__katty__cat_head");
+  const legs = document.querySelectorAll(".fmuzik__katty__leg");
+  const pos = {
+    x: null,
+    y: null,
+  };
+  let view = null;
+
+  cat.style.left = "50px";
+  const walk = () => {
+    cat.classList.remove("fmuzik__katty__first_pose");
+    legs.forEach((leg) => leg.classList.add("fmuzik__katty__walk"));
+  };
+
+  const handleMouseMotion = (e) => {
+    // log("current e");
+    // log(e);
+    view = e.view;
+    pos.x = e.clientX - (view.outerWidth - 320);
+    pos.y = e.clientY - (view.outerHeight - 415);
+    walk();
+  };
+
+  const handleTouchMotion = (e) => {
+    if (!e.targetTouches) return;
+    pos.x = e.targetTouches[0].offsetX;
+    pos.y = e.targetTouches[0].offsetY;
+    walk();
+  };
+
+  const turnRight = () => {
+    cat.style.left = `${pos.x - 8}px`;
+    cat.classList.remove("fmuzik__katty__face_left");
+    cat.classList.add("fmuzik__katty__face_right");
+  };
+
+  const turnLeft = () => {
+    cat.style.left = `${pos.x - 180}px`;
+    cat.classList.remove("fmuzik__katty__face_right");
+    cat.classList.add("fmuzik__katty__face_left");
+  };
+
+  const decideTurnDirection = () => {
+    // log("decideTurnDirection");
+    // log(cat.getBoundingClientRect());
+    cat.getBoundingClientRect().x - (view.outerWidth - 320) < pos.x
+      ? turnRight()
+      : turnLeft();
+  };
+
+  const headMotion = () => {
+    pos.y > wrapper.clientHeight + 20
+      ? (head.style.top = "-15px")
+      : (head.style.top = "-30px");
+  };
+
+  const jump = () => {
+    catWrapper.classList.remove("fmuzik__katty__jump");
+    if (pos.y < wrapper.clientHeight - 60) {
+      setTimeout(() => {
+        catWrapper.classList.add("fmuzik__katty__jump");
+      }, 100);
+    }
+  };
+
+  const decideStop = () => {
+    // log("decideStop");
+    // log("pos: ");
+    // log(pos);
+
+    if (
+      (cat.classList.contains("fmuzik__katty__face_right") &&
+        pos.x - 8 === cat.offsetLeft) ||
+      (cat.classList.contains("fmuzik__katty__face_left") &&
+        pos.x - 180 === cat.offsetLeft)
+    ) {
+      legs.forEach((leg) => leg.classList.remove("fmuzik__katty__walk"));
+    }
+  };
+
+  setInterval(() => {
+    if (!pos.x || !pos.y) return;
+    decideTurnDirection();
+    headMotion();
+    decideStop();
+  }, 100);
+
+  setInterval(() => {
+    if (!pos.x || !pos.y) return;
+    jump();
+  }, 1000);
+
+  const fmuzikContainerEl = document.querySelector(
+    ".fmuzik-playlist-panel--container"
+  );
+  fmuzikContainerEl.addEventListener("mousemove", handleMouseMotion);
+  fmuzikContainerEl.addEventListener("mousemove", handleTouchMotion);
 }
 
 /**
