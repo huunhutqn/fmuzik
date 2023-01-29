@@ -3,6 +3,9 @@
   - Feature: TODO: Filter video of playlist (taitt7)
   - Feature: TODO: Add all videos in a post to playlist
 
+4.1 - 2023/01/29:
+  - Fix: Suggest playlist video name by video contents
+
 4.0 - 2023/01/28:
   - Fix: Improve UI/UX
   - Fix: Lost data when upgrade new version (trungld7)
