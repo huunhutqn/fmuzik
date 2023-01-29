@@ -341,20 +341,35 @@ function getContentsOfPostByVideoEl(video) {
     let prevSiblingAttrDir = prevSibling?.getAttribute("dir");
 
     if (!prevSiblingAttrDir) {
-      // Try get prev sibling other (section new/latest posts on top of group)
-      // Or post have translationable
-      prevSibling = prevSibling.previousElementSibling?.firstElementChild;
-      prevSiblingAttrDir = prevSibling?.getAttribute("dir");
+      // Try to check if only have blockquote first
+      if (prevSibling && prevSibling.tagName.toLowerCase() == "blockquote") {
+        prevSibling = prevSibling?.firstElementChild;
+        prevSiblingAttrDir = prevSibling?.getAttribute("dir");
+      }
+      if (!prevSiblingAttrDir) {
+        // Try get prev sibling other (section new/latest posts on top of group)
+        // Or post have translationable
+        prevSibling = prevSibling.previousElementSibling?.firstElementChild;
+        prevSiblingAttrDir = prevSibling?.getAttribute("dir");
+      }
     }
 
     if (prevSibling && prevSiblingAttrDir && prevSiblingAttrDir == "auto") {
       log(prevSibling);
-      const prevSiblingSpanElArr = prevSibling.querySelectorAll("span");
+      const prevSiblingSpanElArr = prevSibling.querySelectorAll(
+        "span, div[dir=auto]"
+      );
       const prevSiblingContentArr = [];
       if (prevSiblingSpanElArr && prevSiblingSpanElArr.length > 0) {
         prevSiblingSpanElArr.forEach((text) => {
           if (text.textContent) {
-            prevSiblingContentArr.push(text.textContent);
+            if (
+              text.tagName.toLowerCase() == "span" ||
+              (text.tagName.toLowerCase() == "div" &&
+                text.childElementCount == 0)
+            ) {
+              prevSiblingContentArr.push(text.textContent);
+            }
           }
         });
       }
@@ -380,7 +395,13 @@ function getContentsOfPostByVideoEl(video) {
       // 1: "Ngoan hồn"
       // 2: "Tin"
       // https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
-      const newPrevSiblingContentArr = [...new Set(prevSiblingContentArr)];
+      let newPrevSiblingContentArr = [...new Set(prevSiblingContentArr)];
+      // remove junk content
+      if (newPrevSiblingContentArr && newPrevSiblingContentArr.length > 0) {
+        newPrevSiblingContentArr = newPrevSiblingContentArr.filter(
+          (v) => !v.match(/(^\s*[\.·_-]+\s*$)|(^\s+$)/g)
+        );
+      }
       log(newPrevSiblingContentArr);
       return newPrevSiblingContentArr;
     }
