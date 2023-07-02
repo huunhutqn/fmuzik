@@ -53,7 +53,7 @@ let currentPlaylistId = -1;
 let currentIndexPlaylistVideo = -1;
 let isLoopPlaylistVideoOnce = false;
 
-const modeDev = false;
+const modeDev = true;
 
 //#region declear function
 
@@ -346,7 +346,7 @@ function getContentsOfPostByVideoEl(video) {
         prevSibling = prevSibling?.firstElementChild;
         prevSiblingAttrDir = prevSibling?.getAttribute("dir");
       }
-      if (!prevSiblingAttrDir) {
+      if (!prevSiblingAttrDir && prevSibling) {
         // Try get prev sibling other (section new/latest posts on top of group)
         // Or post have translationable
         prevSibling = prevSibling.previousElementSibling?.firstElementChild;
@@ -1013,7 +1013,21 @@ function createListVideosElement(playlist) {
 
       const divTmp = document.createElement("div");
       divTmp.classList.add("fmuzik-playlist__item--wrap");
+      divTmp.classList.add("fmuzik-playlist__videos--wrap");
       divTmp.appendChild(video);
+
+      const moreOptions = document.createElement("div");
+      moreOptions.classList.add("fmuzik-playlist__item__more-options");
+
+      const moreOptionsIcon = document.createElement("div");
+      moreOptionsIcon.classList.add(
+        "fmuzik-playlist__item__more-options__icon"
+      );
+
+      const moreOptionsIconBtnEl = document.createElement("button");
+      moreOptionsIconBtnEl.classList.add(
+        "fmuzik-playlist__item__more-options-icon-btn"
+      );
 
       const deleteBtnEl = document.createElement("button");
       deleteBtnEl.classList.add("fmuzik-playlist__item__delete-btn");
@@ -1021,7 +1035,20 @@ function createListVideosElement(playlist) {
       deleteBtnEl.addEventListener("click", (e) =>
         deleteVideo(e, playlist.id, element, index)
       );
-      divTmp.appendChild(deleteBtnEl);
+
+      const editVideoNameBtnEl = document.createElement("button");
+      editVideoNameBtnEl.classList.add("fmuzik-playlist__item__edit-name-btn");
+      editVideoNameBtnEl.setAttribute("title", "Đổi tên video này!");
+      editVideoNameBtnEl.addEventListener("click", (e) =>
+        // TODO
+        log(`Change video name ${element.name} clicked`)
+      );
+
+      moreOptions.appendChild(moreOptionsIconBtnEl);
+      moreOptions.appendChild(editVideoNameBtnEl);
+      moreOptions.appendChild(deleteBtnEl);
+
+      divTmp.appendChild(moreOptions);
       // insert item to list
       listPlayer.appendChild(divTmp);
     });
@@ -1110,7 +1137,21 @@ function createPlaylistItems() {
 
         const divTmp = document.createElement("div");
         divTmp.classList.add("fmuzik-playlist__item--wrap");
+        divTmp.classList.add("fmuzik-playlist__playlists--wrap");
         divTmp.appendChild(playlistItem);
+
+        const moreOptions = document.createElement("div");
+        moreOptions.classList.add("fmuzik-playlist__item__more-options");
+
+        const moreOptionsIcon = document.createElement("div");
+        moreOptionsIcon.classList.add(
+          "fmuzik-playlist__item__more-options__icon"
+        );
+
+        const moreOptionsIconBtnEl = document.createElement("button");
+        moreOptionsIconBtnEl.classList.add(
+          "fmuzik-playlist__item__more-options-icon-btn"
+        );
 
         const deleteBtnEl = document.createElement("button");
         deleteBtnEl.classList.add("fmuzik-playlist__item__delete-btn");
@@ -1118,7 +1159,33 @@ function createPlaylistItems() {
         deleteBtnEl.addEventListener("click", (e) =>
           deletePlaylist(e, element.id, index)
         );
-        divTmp.appendChild(deleteBtnEl);
+
+        const sharePlaylistBtnEl = document.createElement("button");
+        sharePlaylistBtnEl.classList.add(
+          "fmuzik-playlist__item__share-playlist-btn"
+        );
+        sharePlaylistBtnEl.setAttribute("title", "Chia sẻ playlist này?");
+        sharePlaylistBtnEl.addEventListener("click", (e) =>
+          // TODO
+          log(`Share playlist ${element.name} clicked`)
+        );
+
+        const editPlaylistNameBtnEl = document.createElement("button");
+        editPlaylistNameBtnEl.classList.add(
+          "fmuzik-playlist__item__edit-name-btn"
+        );
+        editPlaylistNameBtnEl.setAttribute("title", "Đổi tên playlist này!");
+        editPlaylistNameBtnEl.addEventListener("click", (e) =>
+          // TODO
+          log(`Change playlist name ${element.name} clicked`)
+        );
+
+        moreOptions.appendChild(moreOptionsIconBtnEl);
+        moreOptions.appendChild(sharePlaylistBtnEl);
+        moreOptions.appendChild(editPlaylistNameBtnEl);
+        moreOptions.appendChild(deleteBtnEl);
+
+        divTmp.appendChild(moreOptions);
         // insert item to list
         listPlayer.appendChild(divTmp);
       });
@@ -1415,7 +1482,7 @@ function setupSaveToPlaylist(video) {
         video
           .closest("[data-visualcompletion=ignore]")
           ?.querySelector("[data-instancekey] [data-visualcompletion=ignore]")
-          .insertAdjacentElement("afterbegin", newButtonSaveToPlaylist);
+          ?.insertAdjacentElement("afterbegin", newButtonSaveToPlaylist);
       }
     }
   } else if (!activePlaylist) {
@@ -1618,23 +1685,33 @@ function setupDragAndDropVideoList() {
     for (const task of taskElements) task.draggable = true;
 
     tasksListElement.addEventListener("dragstart", (evt) => {
-      if (evt.target.classList.contains("fmuzik-playlist__item--wrap")) {
-        evt.target.classList.add("fmuzik-playlist__item--wrap__selected");
-      } else {
-        const itemWrapTmp = evt.target.closest(".fmuzik-playlist__item--wrap");
-        if (itemWrapTmp) {
-          itemWrapTmp.classList.add("fmuzik-playlist__item--wrap__selected");
+      if (evt.target.closest(".fmuzik-playlist-panel--list-player-video")) {
+        if (evt.target.classList.contains("fmuzik-playlist__item--wrap")) {
+          evt.target.classList.add("fmuzik-playlist__item--wrap__selected");
+        } else {
+          const itemWrapTmp = evt.target.closest(
+            ".fmuzik-playlist__item--wrap"
+          );
+          if (itemWrapTmp) {
+            itemWrapTmp.classList.add("fmuzik-playlist__item--wrap__selected");
+          }
         }
       }
     });
 
     tasksListElement.addEventListener("dragend", (evt) => {
-      if (evt.target.classList.contains("fmuzik-playlist__item--wrap")) {
-        evt.target.classList.remove("fmuzik-playlist__item--wrap__selected");
-      } else {
-        const itemWrapTmp = evt.target.closest(".fmuzik-playlist__item--wrap");
-        if (itemWrapTmp) {
-          itemWrapTmp.classList.remove("fmuzik-playlist__item--wrap__selected");
+      if (evt.target.closest(".fmuzik-playlist-panel--list-player-video")) {
+        if (evt.target.classList.contains("fmuzik-playlist__item--wrap")) {
+          evt.target.classList.remove("fmuzik-playlist__item--wrap__selected");
+        } else {
+          const itemWrapTmp = evt.target.closest(
+            ".fmuzik-playlist__item--wrap"
+          );
+          if (itemWrapTmp) {
+            itemWrapTmp.classList.remove(
+              "fmuzik-playlist__item--wrap__selected"
+            );
+          }
         }
       }
     });
@@ -1642,37 +1719,43 @@ function setupDragAndDropVideoList() {
     tasksListElement.addEventListener("dragover", (evt) => {
       evt.preventDefault();
 
-      const activeElement = tasksListElement.querySelector(
-        ".fmuzik-playlist__item--wrap__selected"
-      );
-      let currentElement = evt.target;
-      if (!currentElement.classList.contains("fmuzik-playlist__item--wrap")) {
-        const itemWrapTmp = evt.target.closest(".fmuzik-playlist__item--wrap");
-        if (itemWrapTmp) {
-          currentElement = itemWrapTmp;
-        } else {
-          log("Opps! Sth wrong when handle dragover");
+      if (evt.target.closest(".fmuzik-playlist-panel--list-player-video")) {
+        const activeElement = tasksListElement.querySelector(
+          ".fmuzik-playlist__item--wrap__selected"
+        );
+        let currentElement = evt.target;
+        if (!currentElement.classList.contains("fmuzik-playlist__item--wrap")) {
+          const itemWrapTmp = evt.target.closest(
+            ".fmuzik-playlist__item--wrap"
+          );
+          if (itemWrapTmp) {
+            currentElement = itemWrapTmp;
+          } else {
+            log("Opps! Sth wrong when handle dragover");
+            return;
+          }
         }
+
+        const isMoveable =
+          activeElement !== currentElement &&
+          currentElement.classList.contains("fmuzik-playlist__item--wrap");
+
+        if (!isMoveable) return;
+
+        const nextElement = getNextElement(evt.clientY, currentElement);
+
+        if (
+          (nextElement &&
+            activeElement === nextElement.previousElementSibling) ||
+          activeElement === nextElement
+        ) {
+          return;
+        }
+
+        tasksListElement.insertBefore(activeElement, nextElement);
+        // Re-order playlist videos
+        reorderPlaylistVideos();
       }
-
-      const isMoveable =
-        activeElement !== currentElement &&
-        currentElement.classList.contains("fmuzik-playlist__item--wrap");
-
-      if (!isMoveable) return;
-
-      const nextElement = getNextElement(evt.clientY, currentElement);
-
-      if (
-        (nextElement && activeElement === nextElement.previousElementSibling) ||
-        activeElement === nextElement
-      ) {
-        return;
-      }
-
-      tasksListElement.insertBefore(activeElement, nextElement);
-      // Re-order playlist videos
-      reorderPlaylistVideos();
     });
   }
 }
@@ -1706,80 +1789,85 @@ function reorderPlaylistVideos() {
   const listPlayerVideoEl = document.querySelector(
     ".fmuzik-playlist-panel--list-player.fmuzik-playlist-panel--list-player-video"
   );
-  const videoItemWrapElArr = listPlayerVideoEl.querySelectorAll(
-    ".fmuzik-playlist__item--wrap"
-  );
-  if (!videoItemWrapElArr || videoItemWrapElArr.length <= 1) {
-    return;
-  }
-  const newPlaylistPlayer = [];
-  const fmuzilPlayerEl = document.getElementById("fmuzik-player");
+  if (listPlayerVideoEl) {
+    const videoItemWrapElArr = listPlayerVideoEl.querySelectorAll(
+      ".fmuzik-playlist__item--wrap"
+    );
+    if (!videoItemWrapElArr || videoItemWrapElArr.length <= 1) {
+      return;
+    }
+    const newPlaylistPlayer = [];
+    const fmuzilPlayerEl = document.getElementById("fmuzik-player");
 
-  let currentPlaylistOrderedId = "";
+    let currentPlaylistOrderedId = "";
 
-  for (let index = 0; index < videoItemWrapElArr.length; index++) {
-    const videoItemWrapEl = videoItemWrapElArr[index];
-    const videoItemEl = videoItemWrapEl.querySelector(".fmuzik-playlist__item");
-    const videoItem = {
-      name: videoItemEl.getAttribute("fmuzik_playlist_video_name"),
-      url: videoItemEl.getAttribute("fmuzik_playlist_video_url"),
-    };
-    // 2. update position of currentPlaylistPlayer
-    videoItemEl.setAttribute("fmuzik_playlist_video_id", index);
+    for (let index = 0; index < videoItemWrapElArr.length; index++) {
+      const videoItemWrapEl = videoItemWrapElArr[index];
+      const videoItemEl = videoItemWrapEl.querySelector(
+        ".fmuzik-playlist__item"
+      );
+      const videoItem = {
+        name: videoItemEl.getAttribute("fmuzik_playlist_video_name"),
+        url: videoItemEl.getAttribute("fmuzik_playlist_video_url"),
+      };
+      // 2. update position of currentPlaylistPlayer
+      videoItemEl.setAttribute("fmuzik_playlist_video_id", index);
 
-    if (
-      currentIndexPlaylistVideo !== -1 &&
-      videoItemEl.getAttribute("fmuzik_playlist_id") ==
-        fmuzilPlayerEl.dataset.fmuzikPlaylistId
-    ) {
       if (
-        videoItemEl.getAttribute("fmuzik_playlist_video_url") ==
-        fmuzilPlayerEl.dataset.fmuzikPlaylistVideoUrl
+        currentIndexPlaylistVideo !== -1 &&
+        videoItemEl.getAttribute("fmuzik_playlist_id") ==
+          fmuzilPlayerEl.dataset.fmuzikPlaylistId
       ) {
         if (
-          videoItemEl.getAttribute("fmuzik_playlist_video_id") ===
-          fmuzilPlayerEl.dataset.fmuzikPlaylistVideoId
+          videoItemEl.getAttribute("fmuzik_playlist_video_url") ==
+          fmuzilPlayerEl.dataset.fmuzikPlaylistVideoUrl
         ) {
-          // detect action re-order nothing changes then return(stop)
-          // return;
-        } else {
-          // 3. update currentIndexPlaylistVideo
-          fmuzilPlayerEl.dataset.fmuzikPlaylistVideoId = index;
-          currentIndexPlaylistVideo = index;
+          if (
+            videoItemEl.getAttribute("fmuzik_playlist_video_id") ===
+            fmuzilPlayerEl.dataset.fmuzikPlaylistVideoId
+          ) {
+            // detect action re-order nothing changes then return(stop)
+            // return;
+          } else {
+            // 3. update currentIndexPlaylistVideo
+            fmuzilPlayerEl.dataset.fmuzikPlaylistVideoId = index;
+            currentIndexPlaylistVideo = index;
+          }
         }
       }
-    }
 
-    if (!currentPlaylistOrderedId) {
-      currentPlaylistOrderedId = videoItemEl.getAttribute("fmuzik_playlist_id");
-    }
-
-    newPlaylistPlayer.push(videoItem);
-  }
-
-  currentPlaylistPlayer = newPlaylistPlayer;
-
-  // 4. save currentPlaylistPlayer to storage
-  chrome.storage.sync.get("playlist", (data) => {
-    playlist = data && data.playlist ? data.playlist : [];
-
-    if (!playlist || playlist.length == 0) {
-      showAlert(MSG_TYPE.DANGER, MSG.REORDER_PLAYLIST_VIDEO_ERROR_ON_SAVE);
-      return setTimeout(() => {
-        hideAlert();
-      }, 1000);
-    } else {
-      const indexOfCurrentPlaylistOrdered = playlist.findIndex(
-        (item) => item.id == currentPlaylistOrderedId
-      );
-      if (indexOfCurrentPlaylistOrdered > -1) {
-        playlist[indexOfCurrentPlaylistOrdered].videos = newPlaylistPlayer;
-
-        chrome.storage.sync.set({ playlist: playlist });
-        log("save reorder success!");
+      if (!currentPlaylistOrderedId) {
+        currentPlaylistOrderedId =
+          videoItemEl.getAttribute("fmuzik_playlist_id");
       }
+
+      newPlaylistPlayer.push(videoItem);
     }
-  });
+
+    currentPlaylistPlayer = newPlaylistPlayer;
+
+    // 4. save currentPlaylistPlayer to storage
+    chrome.storage.sync.get("playlist", (data) => {
+      playlist = data && data.playlist ? data.playlist : [];
+
+      if (!playlist || playlist.length == 0) {
+        showAlert(MSG_TYPE.DANGER, MSG.REORDER_PLAYLIST_VIDEO_ERROR_ON_SAVE);
+        return setTimeout(() => {
+          hideAlert();
+        }, 1000);
+      } else {
+        const indexOfCurrentPlaylistOrdered = playlist.findIndex(
+          (item) => item.id == currentPlaylistOrderedId
+        );
+        if (indexOfCurrentPlaylistOrdered > -1) {
+          playlist[indexOfCurrentPlaylistOrdered].videos = newPlaylistPlayer;
+
+          chrome.storage.sync.set({ playlist: playlist });
+          log("save reorder success!");
+        }
+      }
+    });
+  }
 }
 
 /**

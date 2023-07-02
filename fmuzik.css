@@ -1,4 +1,16 @@
 /* Common */
+:root {
+  --fmuzik-more-options-icon: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAB2AAAAdgFOeyYIAAAFHGlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDUgNzkuMTYzNDk5LCAyMDE4LzA4LzEzLTE2OjQwOjIyICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOSAoV2luZG93cykiIHhtcDpDcmVhdGVEYXRlPSIyMDIzLTA3LTAyVDE5OjA2OjM3KzA3OjAwIiB4bXA6TW9kaWZ5RGF0ZT0iMjAyMy0wNy0wMlQxOToxMToyNyswNzowMCIgeG1wOk1ldGFkYXRhRGF0ZT0iMjAyMy0wNy0wMlQxOToxMToyNyswNzowMCIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiIHBob3Rvc2hvcDpJQ0NQcm9maWxlPSJzUkdCIElFQzYxOTY2LTIuMSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo3NGIzYzFmYi1mMGYwLWYzNDYtYTkxMC00YWUwZWI2ZjU0NWEiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NzRiM2MxZmItZjBmMC1mMzQ2LWE5MTAtNGFlMGViNmY1NDVhIiB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6NzRiM2MxZmItZjBmMC1mMzQ2LWE5MTAtNGFlMGViNmY1NDVhIj4gPHhtcE1NOkhpc3Rvcnk+IDxyZGY6U2VxPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0iY3JlYXRlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDo3NGIzYzFmYi1mMGYwLWYzNDYtYTkxMC00YWUwZWI2ZjU0NWEiIHN0RXZ0OndoZW49IjIwMjMtMDctMDJUMTk6MDY6MzcrMDc6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDQyAyMDE5IChXaW5kb3dzKSIvPiA8L3JkZjpTZXE+IDwveG1wTU06SGlzdG9yeT4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz6mEvJ+AAAA4UlEQVQ4jaWSsUoDURBFj0sqOwu/w2KLhBQuCC5pglVs8n3+hVjZW6XOxi2XVIag1bHwLYwPlizsgwtz590ZuMNFrdRWPQZ8qguVhGXqRU2r3tMXQYxaq03gB/Ux01Rqi9plHz26gTrivWDa20xd8FEAZ6DOPp6Ar8BPwDrT1MAP6dpNduG9WgavZepFTaPOr9RJHqbegAJYAgfgGLAHyoGZ138sJSwPyTp5vpQPxgZpsD8bafUNuEv1TbIJsBu74CHUHXDbkwL4BqpsYMVfeC6+GbAFXoDr0D8BzwMzu0h+AQ1tWXH9W5KWAAAAAElFTkSuQmCC");
+  --fmuzik-share-playlist-icon: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgEAQAAACJ4248AAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAAAqo0jMgAAAAlwSFlzAAAAYAAAAGAA8GtCzwAAAAd0SU1FB+cHAg0hEqhCYvkAAAJ4SURBVFjD7ZZLKPRRGMaf858xI5eyptiICFmZZkomLNTkkhkrpWxmkgXZyWoUKxbChiQlRYkNC5eVSWYrtuS+UBZjygz1Pt/i7/LNxWdmMN9mns25vW/v77znnLcDZJTRqyg1NZS9PUowyF/R7S05M0PJz48NzqIi8uHhdwJHSXZ2SKWiALzetAR/V0XFW2xNb8rL03vg0QDUtMQcw2Hg6ur7F85giMpAorLblSouBlwu4Pz8J3KRFIBSR0d6u74OVFYCIyNAMJg2gEiYUEip8XGgrAyYmwNE0grwAXJ3p5THA9psoN+fdoB3EM3vB+rrgZOT/wIQq6cn0O0Ga2uB8XGA/FUAisUC5fMBVVX6zPQ0sLoKZbeDXi/Q3/8ZBChra4nUr7i+LCwkl5ZIkUhrt5tsatL7m5sUk4ns6yNFKF1db/7GlHfM7GxgaAgYHgby8uIbKQUFAO3tUBsbYGenPo7aTKIZIK1W3d3pJM/OYtfDYcrCAulwkDk5lObmyPWtLYrZTDGbUwQIhcjLy7hLsr1NKSmhGI1kRwc5NUX6/bGG+nGkCPCZRkdJpSguF3l9/bV9FMS3AGRiglSKnJ1NznFs7AcAfD7SYKBMTibnFwhQLJa/bvTiYvLBn58ppaVkW1tyGQsGyYaGqDvg8SQdX+bnKWYzeXEROX9/Ty4vk4ODsT+tQIC02eIUoqws8uAgOYC6OkpPz8d4d5d0Oikmk/4SCgoin2H84EYAUNrLC6WxEaq3F7BawdzcLyuROj4GuruB01NgYEBp+/sUkwmqtRVwOMCVlQ/jx0egpUWpw8NUC98n1VDT+I/vHKW6mry5iZv2jDJ61R/lr00bgy5gPgAAAABJRU5ErkJggg==");
+  /* #7DC56F */
+  --fmuzik-share-playlist-icon-hover: url("data:image/png;base64,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");
+  --fmuzik-delete-icon: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3Csvg width='1em' height='1em' preserveAspectRatio='xMidYMid meet' viewBox='0 0 28 28' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cpath d='M19.5 16a5.5 5.5 0 1 1 0 11a5.5 5.5 0 0 1 0-11zM14 2a4 4 0 0 1 3.995 3.8L18 6h5a1 1 0 0 1 .117 1.993L23 8h-.849l-.594 7.332a6.5 6.5 0 0 0-6.746 10.669L10.766 26a3.75 3.75 0 0 1-3.738-3.447L5.848 8H5a1 1 0 0 1-.993-.883L4 7a1 1 0 0 1 .883-.993L5 6h5a4 4 0 0 1 4-4zm3.73 17.024l-.068-.058a.5.5 0 0 0-.569 0l-.07.058l-.057.07a.5.5 0 0 0 0 .568l.058.07l1.77 1.769l-1.768 1.766l-.058.07a.5.5 0 0 0 0 .568l.058.07l.07.057a.5.5 0 0 0 .568 0l.07-.057l1.766-1.767l1.77 1.769l.069.058a.5.5 0 0 0 .568 0l.07-.058l.057-.07a.5.5 0 0 0 0-.568l-.057-.07l-1.77-1.768l1.772-1.77l.058-.069a.5.5 0 0 0 0-.569l-.058-.069l-.069-.058a.5.5 0 0 0-.569 0l-.069.058l-1.772 1.77l-1.77-1.77l-.068-.058l.069.058zM14 4a2 2 0 0 0-1.995 1.85L12 6h4l-.005-.15A2 2 0 0 0 14 4z' style='fill: rgba(232, 217, 217, 0.65);'/%3E%3C/g%3E%3C/svg%3E");
+  --fmuzik-delete-icon-hover: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20width%3D%221em%22%20height%3D%221em%22%20preserveAspectRatio%3D%22xMidYMid%20meet%22%20viewBox%3D%220%200%2028%2028%22%3E%3Cg%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M19.5%2016a5.5%205.5%200%201%201%200%2011a5.5%205.5%200%200%201%200-11zM14%202a4%204%200%200%201%203.995%203.8L18%206h5a1%201%200%200%201%20.117%201.993L23%208h-.849l-.594%207.332a6.5%206.5%200%200%200-6.746%2010.669L10.766%2026a3.75%203.75%200%200%201-3.738-3.447L5.848%208H5a1%201%200%200%201-.993-.883L4%207a1%201%200%200%201%20.883-.993L5%206h5a4%204%200%200%201%204-4zm3.73%2017.024l-.068-.058a.5.5%200%200%200-.569%200l-.07.058l-.057.07a.5.5%200%200%200%200%20.568l.058.07l1.77%201.769l-1.768%201.766l-.058.07a.5.5%200%200%200%200%20.568l.058.07l.07.057a.5.5%200%200%200%20.568%200l.07-.057l1.766-1.767l1.77%201.769l.069.058a.5.5%200%200%200%20.568%200l.07-.058l.057-.07a.5.5%200%200%200%200-.568l-.057-.07l-1.77-1.768l1.772-1.77l.058-.069a.5.5%200%200%200%200-.569l-.058-.069l-.069-.058a.5.5%200%200%200-.569%200l-.069.058l-1.772%201.77l-1.77-1.77l-.068-.058l.069.058zM14%204a2%202%200%200%200-1.995%201.85L12%206h4l-.005-.15A2%202%200%200%200%2014%204z%22%20fill%3D%22%23ff5f3b%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --fmuzik-edit-name-icon: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgEAQAAACJ4248AAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAAAqo0jMgAAAAlwSFlzAAAAYAAAAGAA8GtCzwAAAAd0SU1FB+cHAg4ZOoguyKEAAAFiSURBVFjD7ZavrsIwHIV/nSCIBTqw6D0ABkeyEHgNEkgIKBQeQRBkFgRPgOABMEgEJCQIFBrPH4EgWc8VDQn3cssmui43l6Nquu/radeU6BPNgbBtYDAAVitgvYbwfSCfNwNHLgdst3jJ4QBRKBgQ6HahzG4HkUrFAxa2DTAmx76vlmi1Yli148jaJ5NQCTGdaoZzDmw2zwDAsqTEcPhq0O9rhKsOnKqJ2w3CdWOGqySCAKjXDcF/kyiVDMMfGY/DvmlFh3NOtFgQFYtRZxDt95pW/uO0h0YIoNP5wP8y/HG9Rk0QAM2mFrgUmM0Sg0uB6zU5uMhkou95u60VLgVcNzG4FCiXE4NLgWr1/Z43GrHBiYiAdFq+aAHgfgeOR/lLzucQtVqs8O9NZLPGYP868sUCzgmjERHnZrDnM1Gvx6zLhaSA50W/enXF854aYIxQqRA5jpkGTidiyyVjgBnem3wBnzYg7f63tKkAAAAASUVORK5CYII=");
+  /* #DB9446 */
+  --fmuzik-edit-name-icon-hover: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgEAYAAAAj6qa3AAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAGYktHRAAAAAAAAPlDu38AAAAJcEhZcwAAAGAAAABgAPBrQs8AAAAHdElNRQfnBwIOGxKPrQLZAAAD90lEQVRo3u2YYUwTZxjH/28LV5Y5KA42nSRLlGMjm2skogsmdloRp0hcUhNjRqbEotjWioGM6Ta2xa0qgkMKBZUtYALx08wkQFuqc5glxCwbKDNZYR0bY4OMYWcMWyn37NP1wwxpazuvZfy/9vq8z++X5567HLCQ/3eY1A0EyqC2XqumRYu4foAbqKjAm/QN271hA7OxHzESF0dP01I63Nvrew5LhZ/M5kyj4aazdXIy5gUMamtezktbvJgr44qEAYcDT8LLdmVlzfmHHlYDlcuFwdkM+WcbN/KWQ91dQ6Ojgc6RSQ06V7gb8XuFlMLCgOBiNtER9PM8G5FdnJV3dAxqK2mnluNiRoA46kREAGP8b8b9jm9ra1GLE7SmujrYOlSDS3hWpVKcSE3x/LlnT9QLGBlpaNi2LTmZK6PN3NT168OZ9cdy/6qv94uwGEYdx8vKQhbxMbmpavXqqBXgpjOkJqXSWyhc9h6w2cRRpyt4hhWUlAwZLfdy+5uaiCqpkmQyv4g7zIQSszngAXV4Ai+NjUWdAHG5+friz3NTTieaUcDqsrMfuNDEWlm5TjecmXrsq78tFv9EFOhn7a8dPTrnRHRhHd6ZnpbvYGuEN9raAvXzyJ4CIW/1fze6HWP0udW64o7+Q0eCXs8YYwCRy2BJy3379GnwaMHO0lJWjAq2vqgo/THDTbunpUVyAeGCByvi+y8tntz+tWsz1huSHKq+vqDrxQr4A0milXihoYF/yqi2n9HrH7ZMxHeAuNy4CS5RsHZ3RxzchTpsJsIHbBqa27fDLRexCRDBfer4PK7Dbp9zuYUL3olaPK/X8xbDFnu+1Sq5gFgFD1tArIM/tID5Ah6yAPGV1furEOe92NMT8eXWiUyqEgTkUDtQXMxnGy84VM3N/xW4mKCfAt4qujrztdU6X8BDFsDO0w2ybd06X8D9XIEucBnObnk1PTERJln+7HKPJ+wTxXv8dTrJvjt4kP/DuMP2SWPjowYXE3AC5D/LJr05S5bMN/CgBfg+gkl+KwwBUQoetAAo0Yt8hSLkyuI93omrmNm3L9rAxQTcAW76lNSUkOBrvp+ueNHphBqlWJaTw7ZjDHtnZjAOB1InJqgLOsoaH2fvYh3i3W7KYMtw8tw53qJXOo7b7VKDRizDQ02NmzRJSVL3sZCFRCb+HeB/xzfG3eMGTp3CIdlydl+plLrBiOWs8AM9fveu7DDXRkfKy1ek7z/Q4/R44sTfZ6u5S4pfVq2CiX5HuU4H0HtS9xzRmFgrA0CXfSmspb0dAJB27Zp/AsSvrq7ddbfyzBoNe599ITiTk6XuO1KhSnpFppma4tuMK21vOZ3it0Sp+5I8/wDC1DJFx7uhQAAAAABJRU5ErkJggg==");
+}
+
 .d-none {
   display: none !important;
 }
@@ -708,6 +720,7 @@ button.fmuzik-form-btn:hover {
   /* display: flex;
   flex-direction: column; */
   overflow-y: auto;
+  overflow-x: hidden;
 }
 .fmuzik-playlist-panel--list-player.fmuzik-playlist-panel--list-player-video {
   height: calc(100% - 20px - 144px - 10px - 65px - 15px);
@@ -769,6 +782,8 @@ button.fmuzik-form-btn:hover {
   /* overflow: hidden; */
   text-overflow: ellipsis;
   position: relative;
+  overflow-x: hidden;
+  transition: background-color 0.5s, transform 2s, position 2s;
 }
 .fmuzik-playlist__item--wrap:hover {
   color: #ffd985;
@@ -805,11 +820,68 @@ a.fmuzik-playlist__item i {
 a.fmuzik-playlist__item:hover {
   text-decoration: none;
 }
+.fmuzik-playlist__item__more-options {
+  position: absolute;
+  right: 0;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  transform: translateX(49px);
+  transition: ease-in 0.2s;
+  padding: 0 6px;
+  background: rgb(51, 71, 86);
+}
+.fmuzik-playlist__videos--wrap .fmuzik-playlist__item__more-options {
+  /* 2 icon */
+  transform: translateX(49px);
+}
+.fmuzik-playlist__playlists--wrap .fmuzik-playlist__item__more-options {
+  /* 2 icon */
+  transform: translateX(66px);
+}
+.fmuzik-playlist__item--wrap:hover .fmuzik-playlist__item__more-options:hover {
+  transform: translateX(0px);
+}
+.fmuzik-playlist__item--wrap:hover
+  .fmuzik-playlist__item__more-options:hover
+  .fmuzik-playlist__item__more-options-icon-btn {
+  opacity: 0.1 !important;
+  cursor: auto;
+}
+/* .fmuzik-playlist__item__more-options > button:not(:last-child) {
+  margin-right: 4px;
+} */
+.fmuzik-playlist__item__more-options-icon-btn {
+  width: 16px;
+  height: 16px;
+  /* position: absolute;
+  right: 8px; */
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  background-repeat: no-repeat;
+  background-size: contain;
+  margin-right: 10px;
+  top: 1px;
+  position: relative;
+  cursor: pointer;
+}
+.fmuzik-playlist__item--wrap:hover
+  .fmuzik-playlist__item__more-options-icon-btn {
+  opacity: 0.8;
+  background-image: var(--fmuzik-more-options-icon);
+}
+.fmuzik-playlist__item--wrap:hover
+  .fmuzik-playlist__item__more-options-icon-btn:hover {
+  cursor: pointer;
+  opacity: 1;
+  background-image: var(--fmuzik-more-options-icon) !important;
+}
 .fmuzik-playlist__item__delete-btn {
   width: 20px;
   height: 20px;
-  position: absolute;
-  right: 8px;
+  /* position: absolute;
+  right: 8px; */
   background-color: transparent;
   border: none;
   padding: 0;
@@ -818,12 +890,53 @@ a.fmuzik-playlist__item:hover {
 }
 .fmuzik-playlist__item--wrap:hover .fmuzik-playlist__item__delete-btn {
   opacity: 0.5;
-  background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3Csvg width='1em' height='1em' preserveAspectRatio='xMidYMid meet' viewBox='0 0 28 28' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cpath d='M19.5 16a5.5 5.5 0 1 1 0 11a5.5 5.5 0 0 1 0-11zM14 2a4 4 0 0 1 3.995 3.8L18 6h5a1 1 0 0 1 .117 1.993L23 8h-.849l-.594 7.332a6.5 6.5 0 0 0-6.746 10.669L10.766 26a3.75 3.75 0 0 1-3.738-3.447L5.848 8H5a1 1 0 0 1-.993-.883L4 7a1 1 0 0 1 .883-.993L5 6h5a4 4 0 0 1 4-4zm3.73 17.024l-.068-.058a.5.5 0 0 0-.569 0l-.07.058l-.057.07a.5.5 0 0 0 0 .568l.058.07l1.77 1.769l-1.768 1.766l-.058.07a.5.5 0 0 0 0 .568l.058.07l.07.057a.5.5 0 0 0 .568 0l.07-.057l1.766-1.767l1.77 1.769l.069.058a.5.5 0 0 0 .568 0l.07-.058l.057-.07a.5.5 0 0 0 0-.568l-.057-.07l-1.77-1.768l1.772-1.77l.058-.069a.5.5 0 0 0 0-.569l-.058-.069l-.069-.058a.5.5 0 0 0-.569 0l-.069.058l-1.772 1.77l-1.77-1.77l-.068-.058l.069.058zM14 4a2 2 0 0 0-1.995 1.85L12 6h4l-.005-.15A2 2 0 0 0 14 4z' style='fill: rgba(232, 217, 217, 0.65);'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: var(--fmuzik-delete-icon);
 }
 .fmuzik-playlist__item--wrap:hover .fmuzik-playlist__item__delete-btn:hover {
   cursor: pointer;
   opacity: 1;
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20width%3D%221em%22%20height%3D%221em%22%20preserveAspectRatio%3D%22xMidYMid%20meet%22%20viewBox%3D%220%200%2028%2028%22%3E%3Cg%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M19.5%2016a5.5%205.5%200%201%201%200%2011a5.5%205.5%200%200%201%200-11zM14%202a4%204%200%200%201%203.995%203.8L18%206h5a1%201%200%200%201%20.117%201.993L23%208h-.849l-.594%207.332a6.5%206.5%200%200%200-6.746%2010.669L10.766%2026a3.75%203.75%200%200%201-3.738-3.447L5.848%208H5a1%201%200%200%201-.993-.883L4%207a1%201%200%200%201%20.883-.993L5%206h5a4%204%200%200%201%204-4zm3.73%2017.024l-.068-.058a.5.5%200%200%200-.569%200l-.07.058l-.057.07a.5.5%200%200%200%200%20.568l.058.07l1.77%201.769l-1.768%201.766l-.058.07a.5.5%200%200%200%200%20.568l.058.07l.07.057a.5.5%200%200%200%20.568%200l.07-.057l1.766-1.767l1.77%201.769l.069.058a.5.5%200%200%200%20.568%200l.07-.058l.057-.07a.5.5%200%200%200%200-.568l-.057-.07l-1.77-1.768l1.772-1.77l.058-.069a.5.5%200%200%200%200-.569l-.058-.069l-.069-.058a.5.5%200%200%200-.569%200l-.069.058l-1.772%201.77l-1.77-1.77l-.068-.058l.069.058zM14%204a2%202%200%200%200-1.995%201.85L12%206h4l-.005-.15A2%202%200%200%200%2014%204z%22%20fill%3D%22%23ff5f3b%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") !important;
+  background-image: var(--fmuzik-delete-icon-hover) !important;
+}
+.fmuzik-playlist__item__share-playlist-btn {
+  width: 20px;
+  height: 20px;
+  position: relative;
+  top: 1px;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.fmuzik-playlist__item--wrap:hover .fmuzik-playlist__item__share-playlist-btn {
+  opacity: 0.35;
+  background-image: var(--fmuzik-share-playlist-icon);
+}
+.fmuzik-playlist__item--wrap:hover
+  .fmuzik-playlist__item__share-playlist-btn:hover {
+  cursor: pointer;
+  opacity: 1;
+  background-image: var(--fmuzik-share-playlist-icon-hover) !important;
+}
+.fmuzik-playlist__item__edit-name-btn {
+  width: 19px;
+  height: 20px;
+  position: relative;
+  top: 1px;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.fmuzik-playlist__item--wrap:hover .fmuzik-playlist__item__edit-name-btn {
+  opacity: 0.35;
+  background-image: var(--fmuzik-edit-name-icon);
+}
+.fmuzik-playlist__item--wrap:hover .fmuzik-playlist__item__edit-name-btn:hover {
+  cursor: pointer;
+  opacity: 1;
+  background-image: var(--fmuzik-edit-name-icon-hover) !important;
 }
 .fmuzik-playlist__controls {
   margin-top: 5px;
