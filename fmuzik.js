@@ -133,7 +133,7 @@ let isRatedToFMuzik = false;
 let isKattyActive = false;
 let isAskRatingShowing = false;
 
-const modeDev = true;
+const modeDev = false;
 
 //#region declear function
 
