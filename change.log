@@ -1,10 +1,19 @@
-5.0 - 2023/03/03:
-  - Feature: TODO: Import/Export, share playlist (anhpn6)
+6.0 - 2024:
   - Feature: TODO: Filter video of playlist (taitt7)
   - Feature: TODO: Add all videos in a post to playlist
-  - Feature: TODO: Shuffle videos
-  - Feature: TODO: Edit name of video
-  - Feature: TODO: Edit name of playlist
+
+5.0 - 2023/03/03:
+  - Feature: Import/Export, share playlist (anhpn6)
+  - Feature: Shuffle videos
+  - Feature: Edit name of video
+  - Feature: Edit name of playlist
+  - Feature: Save your favorite volume
+  - Feature: Hidden feature, some awesome features,...
+  - Fix: Error when reorder playlist -> Prevent drag playlist(videos is able)
+  - Fix: Suggest name of video by post content
+  - Fix: Missing icon add to playlist on the video post page, on the search page
+  - Fix: Hide subtitle on mini player
+  - Fix: Some errors...
 
 4.1 - 2023/01/29:
   - Fix: Suggest playlist video name by video contents
