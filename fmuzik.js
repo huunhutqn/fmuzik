@@ -7,22 +7,56 @@ let activePlaylist = false;
 let enableLoopVideo = false;
 let fmuzikEverywhere = false;
 let workplaceUrls = [];
-let playlist = [];
+let playlist = [
+  {
+    id: "",
+    name: "",
+    videos: [{ name: "", url: "", articleUrl: "", id: "" }],
+  },
+];
+playlist = [];
+// Fake interface
+let playlistI = {
+  id: "",
+  name: "",
+  videos: [{ name: "", url: "", articleUrl: "", id: "" }],
+};
+playlistI = null;
+let videoI = {
+  name: "",
+  url: "",
+  articleUrl: "",
+  id: "",
+};
+videoI = null;
 // example:
-// {id: string, name: string, videos: [{name: string, url: string, articleUrl: string}]}
+// {id: string, name: string, videos: [{name: string, url: string, articleUrl: string, id: string}]}
 // [
 //   {
-//     id: "fmuzikp123",
-//     name: "FMuzik P Name 123",
+//     id: "p12345",
+//     name: "FMuzik P Name PQO",
 //     videos: [
 //       {
-//         name: "12345",
+//         name: "Video A",
 //         url: 'http://...',
 //         articleUrl: 'http://...',
+//         id: 'v54321',
 //       }
 //     ]
 //   }
 // ]
+let currentDataPlaylistSharing = {
+  id: "",
+  name: "",
+  videos: [
+    {
+      videoName: "",
+      videoUrl: "",
+      isSaveThis: false,
+      id: "",
+    },
+  ],
+};
 
 let statusInit = false;
 
@@ -35,6 +69,8 @@ let popupPlaylistSpinner = document.querySelector(
 const MSG_TYPE = {
   DANGER: "danger",
   SUCCESS: "success",
+  ERROR: "error",
+  INFO: "info",
 };
 const MSG = {
   DEL_PLAYLIST_SUCCESS: "Xóa playlist thành công!",
@@ -48,22 +84,71 @@ const MSG = {
     "Xảy ra lỗi khi lưu playlist khi reorder!",
 };
 
+const CLASS_NAME = {
+  BUTTON_ACTIVE: "fmuzik-playlist__btn-active",
+  BUTTON_EDIT_NAME: "fmuzik-playlist__item__edit-name-btn",
+  PANEL_CONTROLS: "fmuzik-playlist__controls",
+  BUTTON_VIDEO_NEXT: "fmuzik-playlist__controls--next",
+  BUTTON_VIDEO_BACK: "fmuzik-playlist__controls--prev",
+  BUTTON_VIDEO_REPEAT: "fmuzik-playlist__controls--loop-video-once",
+  BUTTON_VIDEO_REPEAT_ACTIVE:
+    "fmuzik-playlist__controls--loop-video-once__active",
+  BUTTON_VIDEO_SHUFFLE: "fmuzik-playlist__controls--shuffle-video",
+  BUTTON_VIDEO_SHUFFLE_ACTIVE:
+    "fmuzik-playlist__controls--shuffle-video__active",
+  BUTTON_VIDEOS_BACK_TO_PLAYLISTS: "fmuzik-playlist__controls--back",
+  PANEL_LIST_PLAYER: "fmuzik-playlist-panel--list-player",
+  PANEL_LIST_PLAYER_VIDEO: "fmuzik-playlist-panel--list-player-video",
+  BUTTON_SAVE_TO_PLAYLIST: "fmuzik__save-to-playlist--btn",
+  LIST_ITEM_WRAP: "fmuzik-playlist__item--wrap",
+  LIST_ITEM: "fmuzik-playlist__item",
+};
+
+const ATTRIBUTE_NAME = {
+  VIDEO_NAME: "fmuzik_playlist_video_name",
+  VIDEO_URL: "fmuzik_playlist_video_url",
+  VIDEO_INDEX_IN_LIST: "fmuzik_playlist_video_index",
+  VIDEO_ARTICLE: "fmuzik_video_article_url",
+  PLAYLIST_ID: "fmuzik_playlist_id",
+  FMUZIK_ID: "fmuzik_id",
+  FMUZIK_VIDEO_URL: "fmuzik_video_url",
+  FMUZIK_VIDEO_ID: "fmuzik_video_id",
+};
+
+const FMUZIK_TEXT = {
+  SHARE: "SHARE",
+  EDIT: "EDIT",
+  FMUZIK_PLAYLIST_SHARING_HREF_KEYWORD: "fmuzikplaylistsharing.com",
+  FMUZIK_PLAYLIST_SHARING_END_FLAG: "fmuzikplaylistsharingend",
+  FMUZIK_PLAYLIST_SHARING_SPLIT_STR: "[[||]]",
+};
+
 let currentPlaylistPlayer = [];
 let currentPlaylistId = -1;
 let currentIndexPlaylistVideo = -1;
 let isLoopPlaylistVideoOnce = false;
+let favoriteVolume = 50;
+let currentVideoPlayingId = "";
+let isRatedToFMuzik = false;
+let isKattyActive = false;
+let isAskRatingShowing = false;
 
-const modeDev = false;
+const modeDev = true;
 
 //#region declear function
 
 /**
  * Log to console in development
  * @param {*} content
+ * @param {*} data
  */
-function log(content) {
+function log(content, data = null) {
   if (modeDev) {
-    console.log(content);
+    if (data === null) {
+      console.log(`${content}`);
+    } else {
+      console.log(`${content} `, data);
+    }
   }
 }
 
@@ -150,16 +235,23 @@ function showPopupPlaylistSpinner() {
  * Show popup playlist spinner
  */
 function hidePopupPlaylistSpinner() {
-  popupPlaylistSpinner.classList.add("d-none");
+  setTimeout(() => {
+    popupPlaylistSpinner.classList.add("d-none");
+  }, 600);
 }
 
 /**
  * Function show alert
  */
-function showAlert(kind, msg) {
+function showAlert(kind, msg, timeAutoHide = 0) {
   const alert = document.querySelector(".fmuzik-alert");
   alert.classList.add("fmuzik-alert-" + kind);
   alert.innerText = msg;
+  if (timeAutoHide !== 0) {
+    setTimeout(() => {
+      hideAlert();
+    }, timeAutoHide);
+  }
 }
 
 /**
@@ -184,7 +276,17 @@ function createAlertElement() {
   }
 }
 
+/**
+ * escapeRegExp
+ * @param {*} string
+ * @returns
+ */
+function escapeRegExp(string) {
+  return string.replace(/\"/g, "&#34;"); // $& means the whole matched string
+}
+
 let oldNumOfVideos = 0;
+let oldUrl = "";
 /**
  * Setup loop videos
  */
@@ -196,16 +298,29 @@ function setupLoopVideos(video) {
   }
 }
 
+function createVideoId() {
+  const newId =
+    "v" +
+    (Math.floor(Math.random() * 100000) + 2) +
+    (Math.floor(Math.random() * 100000) + 1);
+  return newId;
+}
+
+function createPlaylistId() {
+  const newPlaylistId =
+    "p" +
+    (Math.floor(Math.random() * 100000) + 1) +
+    (Math.floor(Math.random() * 100000) + 2);
+  return newPlaylistId;
+}
+
 /**
  * Assign FMuzik id to video
  */
 function assignFMuzikId(video) {
-  if (!video.getAttribute("fmuzik_id")) {
-    const newId =
-      "" +
-      (Math.floor(Math.random() * 1000) + 2) +
-      (Math.floor(Math.random() * 1000) + 1);
-    video.setAttribute("fmuzik_id", "fmuzik" + newId);
+  if (!video.getAttribute(ATTRIBUTE_NAME.FMUZIK_ID)) {
+    const newId = createVideoId();
+    video.setAttribute(ATTRIBUTE_NAME.FMUZIK_ID, newId);
 
     let link = video
       .closest("[data-visualcompletion=ignore]")
@@ -248,7 +363,10 @@ function assignFMuzikId(video) {
           // format link video
           pathname = formatLinkVideo(pathname);
 
-          video.setAttribute("fmuzik_video_url", location.origin + pathname);
+          video.setAttribute(
+            ATTRIBUTE_NAME.FMUZIK_VIDEO_URL,
+            location.origin + pathname
+          );
           log(video);
           contents = getContentsOfPostByVideoEl(video);
           saveContentsToVideo(video, contents);
@@ -257,8 +375,8 @@ function assignFMuzikId(video) {
     }
   } else {
     if (
-      video.getAttribute("fmuzik_id") &&
-      !video.getAttribute("fmuzik_video_url")
+      video.getAttribute(ATTRIBUTE_NAME.FMUZIK_ID) &&
+      !video.getAttribute(ATTRIBUTE_NAME.FMUZIK_VIDEO_URL)
     ) {
       let link = video
         .closest("[data-visualcompletion=ignore]")
@@ -271,7 +389,7 @@ function assignFMuzikId(video) {
         // format link video
         link = formatLinkVideo(link);
 
-        video.setAttribute("fmuzik_video_url", link);
+        video.setAttribute(ATTRIBUTE_NAME.FMUZIK_VIDEO_URL, link);
         log(video);
         contents = getContentsOfPostByVideoEl(video);
         saveContentsToVideo(video, contents);
@@ -284,7 +402,7 @@ function assignFMuzikId(video) {
           link = formatLinkVideo(link);
 
           // album in newsfeed
-          video.setAttribute("fmuzik_video_url", link);
+          video.setAttribute(ATTRIBUTE_NAME.FMUZIK_VIDEO_URL, link);
           log(video);
           contents = getContentsOfPostByVideoEl(video);
           saveContentsToVideo(video, contents);
@@ -300,12 +418,21 @@ function assignFMuzikId(video) {
             // format link video
             pathname = formatLinkVideo(pathname);
 
-            video.setAttribute("fmuzik_video_url", location.origin + pathname);
+            video.setAttribute(
+              ATTRIBUTE_NAME.FMUZIK_VIDEO_URL,
+              location.origin + pathname
+            );
             log(video);
             contents = getContentsOfPostByVideoEl(video);
             saveContentsToVideo(video, contents);
           }
-        }
+        } //else if () {
+        // Try to find video url in single post(whent click to view a post from feeds)
+        // ex: group -> go to a post detail by click publish time 7 July, 2023 -> https://fpt.workplace.com/groups/muzikinmymind/posts/2611151419039613
+        //   link = video
+        // .closest("[role=article][aria-posinset=1]")
+        // ?.querySelector('a[href^="' + fptWorkplace + '"][role=link]');
+        // }
       }
     }
   }
@@ -346,35 +473,50 @@ function getContentsOfPostByVideoEl(video) {
         prevSibling = prevSibling?.firstElementChild;
         prevSiblingAttrDir = prevSibling?.getAttribute("dir");
       }
-      if (!prevSiblingAttrDir) {
+      if (!prevSiblingAttrDir && prevSibling) {
         // Try get prev sibling other (section new/latest posts on top of group)
         // Or post have translationable
-        prevSibling = prevSibling.previousElementSibling?.firstElementChild;
+        prevSibling =
+          parentHasId.closest("div").firstElementChild.firstElementChild;
         prevSiblingAttrDir = prevSibling?.getAttribute("dir");
+        // Try to get content
+        if (!prevSiblingAttrDir) {
+          prevSibling =
+            parentHasId.parentElement.firstElementChild.querySelector("[dir]");
+          prevSiblingAttrDir = prevSibling?.getAttribute("dir");
+        }
       }
     }
 
     if (prevSibling && prevSiblingAttrDir && prevSiblingAttrDir == "auto") {
       log(prevSibling);
       const prevSiblingSpanElArr = prevSibling.querySelectorAll(
-        "span, div[dir=auto]"
+        "span, div[dir=auto], span[dir=auto]"
       );
       const prevSiblingContentArr = [];
       if (prevSiblingSpanElArr && prevSiblingSpanElArr.length > 0) {
         prevSiblingSpanElArr.forEach((text) => {
-          if (text.textContent) {
+          if (text?.innerText) {
             if (
-              text.tagName.toLowerCase() == "span" ||
+              (text.tagName.toLowerCase() == "span" &&
+                !(
+                  text?.firstElementChild?.getAttribute("role") === "button"
+                )) ||
               (text.tagName.toLowerCase() == "div" &&
-                text.childElementCount == 0)
+                text.childElementCount == 0 &&
+                text.getAttribute("role") !== "button")
             ) {
-              prevSiblingContentArr.push(text.textContent);
+              if (text.innerText.match("\n")) {
+                // 'Abbey Road (Album) - The Beatles\n#NhacAuMy'
+                prevSiblingContentArr.push(...text.innerText.split("\n"));
+              } else {
+                prevSiblingContentArr.push(text.innerText);
+              }
             }
           }
         });
       }
       log(prevSiblingContentArr);
-      // remove first element in arr:
       // ['#nhachoaNgoan hồnTin', '#nhachoa', '#nhachoa', '#nhachoa', 'Ngoan hồn', 'Tin']
       // 0: "#nhachoaNgoan hồnTin"
       // 1: "#nhachoa"
@@ -388,7 +530,7 @@ function getContentsOfPostByVideoEl(video) {
       // 2: "#nhachoa"
       // 3: "Ngoan hồn"
       // 4: "Tin"
-      prevSiblingContentArr.shift();
+      // prevSiblingContentArr.shift();
       // remove duplicate
       // =>
       // 0: "#nhachoa"
@@ -401,6 +543,14 @@ function getContentsOfPostByVideoEl(video) {
         newPrevSiblingContentArr = newPrevSiblingContentArr.filter(
           (v) => !v.match(/(^\s*[\.·_-]+\s*$)|(^\s+$)/g)
         );
+        newPrevSiblingContentArr.sort((a, b) => {
+          if (a.match(/^\#/g)) {
+            return 1;
+          } else {
+            return -1;
+          }
+          return 0;
+        });
       }
       log(newPrevSiblingContentArr);
       return newPrevSiblingContentArr;
@@ -455,7 +605,7 @@ function saveContentsToVideo(video, contents) {
  */
 function saveVideoToPlaylistWithCheckbox(e, videoUrl, playlistIndex) {
   showPopupPlaylistSpinner();
-  const playlistId = e.target.getAttribute("fmuzik_playlist_id");
+  const playlistId = e.target.getAttribute(ATTRIBUTE_NAME.PLAYLIST_ID);
   const inputVideoName = document.getElementById("fmuzik-playlist-video-name");
   chrome.storage.sync.get("playlist", (data) => {
     let playlistTmp = data.playlist;
@@ -475,9 +625,7 @@ function saveVideoToPlaylistWithCheckbox(e, videoUrl, playlistIndex) {
               //e.preventDefault();
               showAlert(MSG_TYPE.DANGER, MSG.WRONG_VIDEO_NAME);
               inputVideoName.focus();
-              setTimeout(() => {
-                hidePopupPlaylistSpinner();
-              }, 500);
+              hidePopupPlaylistSpinner();
               return setTimeout(() => {
                 hideAlert();
               }, 1000);
@@ -492,8 +640,8 @@ function saveVideoToPlaylistWithCheckbox(e, videoUrl, playlistIndex) {
                 MSG_TYPE.SUCCESS,
                 "Thêm video vào playlist '" + element.name + "' thành công!"
               );
+              hidePopupPlaylistSpinner();
               setTimeout(() => {
-                hidePopupPlaylistSpinner();
                 closePopupPlaylist();
               }, 600);
               setTimeout(() => {
@@ -507,9 +655,7 @@ function saveVideoToPlaylistWithCheckbox(e, videoUrl, playlistIndex) {
                 MSG_TYPE.SUCCESS,
                 "Xóa video khỏi playlist '" + element.name + "' thành công!"
               );
-              setTimeout(() => {
-                hidePopupPlaylistSpinner();
-              }, 600);
+              hidePopupPlaylistSpinner();
               setTimeout(() => {
                 hideAlert();
               }, 1000);
@@ -554,10 +700,7 @@ function createNewPlaylist(fmuzik_id) {
     // insert to playlist arr
     chrome.storage.sync.get("playlist", (data) => {
       playlist = data && data.playlist ? data.playlist : [];
-      const newPlaylistId =
-        "" +
-        (Math.floor(Math.random() * 1000) + 1) +
-        (Math.floor(Math.random() * 1000) + 2);
+      const newPlaylistId = createPlaylistId();
 
       const video = document.querySelector(
         "video[fmuzik_id=" + fmuzik_id + "]"
@@ -573,9 +716,10 @@ function createNewPlaylist(fmuzik_id) {
           name: input.value,
           videos: [
             {
-              url: video.getAttribute("fmuzik_video_url"),
+              url: video.getAttribute(ATTRIBUTE_NAME.FMUZIK_VIDEO_URL),
               name: inputVideoName.value,
-              articleUrl: video.getAttribute("fmuzik_video_article_url"),
+              articleUrl: video.getAttribute(ATTRIBUTE_NAME.VIDEO_ARTICLE),
+              id: fmuzik_id,
             },
           ],
         };
@@ -596,8 +740,8 @@ function createNewPlaylist(fmuzik_id) {
           "Đã thêm video vào playlist '" + input.value + "'!"
         );
 
+        hidePopupPlaylistSpinner();
         setTimeout(() => {
-          hidePopupPlaylistSpinner();
           closePopupPlaylist();
         }, 600);
 
@@ -607,9 +751,7 @@ function createNewPlaylist(fmuzik_id) {
       }
     });
   }
-  setTimeout(() => {
-    hidePopupPlaylistSpinner();
-  }, 500);
+  hidePopupPlaylistSpinner();
 }
 
 /**
@@ -623,7 +765,7 @@ function createSaveToPlaylistElement(fmuzik_id) {
     const buttonCreate = document.createElement("button");
     buttonCreate.id = "fmuzik-playlist-create-btn";
     buttonCreate.classList.add("fmuzik-form-btn");
-    buttonCreate.innerText = "Tạo";
+    buttonCreate.innerText = "Tạo Playlist";
     buttonCreate.addEventListener("click", (e) => createNewPlaylist(fmuzik_id));
     popupPlaylistContainer.insertAdjacentHTML(
       "beforeend",
@@ -650,7 +792,7 @@ function createSaveToPlaylistElement(fmuzik_id) {
         </div>
         <div class="fmuzik-row fmuzik-playlist-save-to--bottom">
           <div class="fmuzik-col fmuzik-form-group">
-            <label class="fmuzik-form-label">Tạo playlist: </label>
+            <label class="fmuzik-form-label">Tên Playlist </label>
             <input type="text" id="fmuzik-playlist-create" class="fmuzik-form-input" placeholder="Nhập tên playlist (< 150 kí tự)">
           </div>
         </div>
@@ -670,18 +812,18 @@ function createSaveToPlaylistElement(fmuzik_id) {
  * Play video
  * @link https://developers.facebook.com/docs/plugins/embedded-video-player/
  */
-function playVideo(url, index) {
-  currentIndexPlaylistVideo = index;
+function playVideo(videoPlaying, index) {
+  currentIndexPlaylistVideo = parseInt(index);
 
   const currentVideoElInList = document.querySelector(
-    `[fmuzik_playlist_video_id="${index}"]`
+    `[${ATTRIBUTE_NAME.VIDEO_INDEX_IN_LIST}="${index}"]`
   );
   const playListId =
     (currentVideoElInList
-      ? currentVideoElInList.getAttribute("fmuzik_playlist_id")
+      ? currentVideoElInList.getAttribute(ATTRIBUTE_NAME.PLAYLIST_ID)
       : "") ?? "";
 
-  const newUrl = encodeURIComponent(url);
+  const newUrl = encodeURIComponent(videoPlaying.url);
   const iframe = `<iframe id="fmuzik-player" 
     src="https://fpt.workplace.com/plugins/video.php?href=${newUrl}%2F&width=300&show-text=false&height=144&mute=0&autoplay=true&show-captions=false&appId" 
     width="300" height="144" 
@@ -695,7 +837,7 @@ function playVideo(url, index) {
     data-show-text="false"
     data-fmuzik-playlist-id="${playListId}"
     data-fmuzik-playlist-video-id="${index}"
-    data-fmuzik-playlist-video-url="${url}">
+    data-fmuzik-playlist-video-url="${videoPlaying.url}">
   </iframe>
   `;
   const playlistPanelPlayerMask = document.querySelector(
@@ -706,28 +848,69 @@ function playVideo(url, index) {
   playlistPanelPlayerMask.insertAdjacentHTML("afterbegin", iframe);
   const player = document.querySelector("#fmuzik-player");
 
-  player.addEventListener("load", (e) => {
-    const video = player.contentWindow.document.body.querySelector("video");
-    // unmuted
-    video.muted = false;
-    video.volume = 1.0;
-    video.play();
-    video.oncanplay = function () {
-      video.defaultMuted = false;
-      video.removeAttribute("muted");
-      video.volume = 1.0;
-    };
+  setTimeout(() => {
+    player.addEventListener("load", (e) => {
+      const video = player.contentWindow.document.body.querySelector("video");
+      // unmuted
+      video.muted = false;
+      video.volume = favoriteVolume;
+      video.play();
+      video.oncanplay = function () {
+        log("video.oncanplay");
+        video.defaultMuted = false;
+        video.removeAttribute("muted");
+        video.volume = favoriteVolume;
+      };
 
-    video.addEventListener("ended", (e) => {
-      if (isLoopPlaylistVideoOnce) {
-        // Loop video
-        video.play();
-      } else {
-        // next video
-        nextVideo(e);
+      video.addEventListener("volumechange", (e) => {
+        if (video.muted === true) {
+          favoriteVolume = 0;
+        } else {
+          favoriteVolume =
+            typeof parseFloat(video.volume) == "number"
+              ? parseFloat(video.volume)
+              : 50;
+        }
+        log(`volume changed: ${favoriteVolume}`);
+        chrome.storage.sync.set({ favoriteVolume: favoriteVolume });
+      });
+
+      // Hide subtitle
+      if (
+        video.nextSibling &&
+        video.nextSibling.firstElementChild &&
+        video.nextSibling.firstElementChild.tagName.toLowerCase() == "span"
+      ) {
+        video.nextSibling.classList.add("d-none");
       }
+
+      video.addEventListener("ended", (e) => {
+        if (isLoopPlaylistVideoOnce) {
+          // Loop video
+          video.play();
+        } else {
+          // next video
+          nextVideo(e);
+        }
+
+        setTimeout(() => {
+          log("isRatedToFMuzik: ", isRatedToFMuzik);
+          if (!isRatedToFMuzik) {
+            const unlucky = Math.round(Math.random() * 4);
+            // In Vietnamese, 4 is lost : )
+            log("unlucky: ", unlucky);
+            if (unlucky === 4 && !isAskRatingShowing) {
+              setupAskRating();
+            }
+          }
+        }, 500);
+      });
     });
-  });
+
+    // Update icon playing on item
+    updateIconPlayingOnItem(currentIndexPlaylistVideo);
+    currentVideoPlayingId = videoPlaying.id;
+  }, 50);
 }
 
 /**
@@ -736,7 +919,7 @@ function playVideo(url, index) {
 function selectVideo(e, video, index, playlistId) {
   e.preventDefault();
   // play video
-  playVideo(video.url, index);
+  playVideo(video, index);
 }
 
 /**
@@ -766,7 +949,7 @@ function prevVideo(e) {
   }
 
   const nextVideoItem = currentPlaylistPlayer[nextVideo];
-  playVideo(nextVideoItem.url, nextVideo);
+  playVideo(nextVideoItem, nextVideo);
 }
 
 /**
@@ -785,22 +968,23 @@ function nextVideo(e) {
   }
 
   const nextVideoItem = currentPlaylistPlayer[nextVideo];
-  playVideo(nextVideoItem.url, nextVideo);
+  playVideo(nextVideoItem, nextVideo);
 }
 
 /**
  * Create controls player
+ * @param {string} playlistId
  */
-function createControlsPlayerElement() {
-  if (document.querySelector(".fmuzik-playlist__controls")) {
-    document.querySelector(".fmuzik-playlist__controls").remove();
+function createControlsPlayerElement(playlistId) {
+  if (document.querySelector(`.${CLASS_NAME.PANEL_CONTROLS}`)) {
+    document.querySelector(`.${CLASS_NAME.PANEL_CONTROLS}`).remove();
   }
   const controls = document.createElement("div");
-  controls.classList.add("fmuzik-playlist__controls");
+  controls.classList.add(CLASS_NAME.PANEL_CONTROLS);
 
   // Back list video of playlist to list of playlist
   const backToPlaylistBtn = document.createElement("button");
-  backToPlaylistBtn.classList.add("fmuzik-playlist__controls--back");
+  backToPlaylistBtn.classList.add(CLASS_NAME.BUTTON_VIDEOS_BACK_TO_PLAYLISTS);
   backToPlaylistBtn.innerHTML = `
     <i class="gg-arrow-left-o"></i>
   `;
@@ -808,7 +992,7 @@ function createControlsPlayerElement() {
 
   // Previous to a video in current playlist
   const prevBtn = document.createElement("button");
-  prevBtn.classList.add("fmuzik-playlist__controls--prev");
+  prevBtn.classList.add(CLASS_NAME.BUTTON_VIDEO_BACK);
   prevBtn.innerHTML = `
     <i class="gg-play-track-prev-o"></i>
   `;
@@ -816,21 +1000,28 @@ function createControlsPlayerElement() {
 
   // Next to a video in current playlist
   const nextBtn = document.createElement("button");
-  nextBtn.classList.add("fmuzik-playlist__controls--next");
+  nextBtn.classList.add(CLASS_NAME.BUTTON_VIDEO_NEXT);
   nextBtn.innerHTML = `
     <i class="gg-play-track-next-o"></i>
   `;
   nextBtn.addEventListener("click", (e) => nextVideo(e));
 
+  const shuffleVideosBtn = document.createElement("button");
+  shuffleVideosBtn.classList.add(CLASS_NAME.BUTTON_VIDEO_SHUFFLE);
+  shuffleVideosBtn.title = "Trộn video";
+  shuffleVideosBtn.addEventListener("click", (e) => {
+    log("Shuffle videos clicked");
+    shuffleVideosBtn.classList.add(CLASS_NAME.BUTTON_VIDEO_SHUFFLE_ACTIVE);
+    shuffleVideos(playlistId);
+  });
+
   // Loop current video in current playlist
   const loopPlaylistVideoOnceBtn = document.createElement("button");
-  loopPlaylistVideoOnceBtn.classList.add(
-    "fmuzik-playlist__controls--loop-video-once"
-  );
+  loopPlaylistVideoOnceBtn.classList.add(CLASS_NAME.BUTTON_VIDEO_REPEAT);
   loopPlaylistVideoOnceBtn.title = "Repeat one";
   if (isLoopPlaylistVideoOnce) {
     loopPlaylistVideoOnceBtn.classList.add(
-      "fmuzik-playlist__controls--loop-video-once__active"
+      CLASS_NAME.BUTTON_VIDEO_REPEAT_ACTIVE
     );
   }
   loopPlaylistVideoOnceBtn.innerHTML = `
@@ -844,6 +1035,7 @@ function createControlsPlayerElement() {
   controls.appendChild(backToPlaylistBtn);
   controls.appendChild(prevBtn);
   controls.appendChild(nextBtn);
+  controls.appendChild(shuffleVideosBtn);
   controls.appendChild(loopPlaylistVideoOnceBtn);
 
   return controls;
@@ -899,13 +1091,14 @@ function deleteVideo(e, playlistId, video, index) {
         }, 1000);
       }
       playlist = newPlaylist;
-      chrome.storage.sync.set({ playlist: newPlaylist });
-      setTimeout(() => {
-        // create list videos
-        createListVideosElement(playlistItem);
-        // if (playlistItem && playlistItem.length > 0) {
-        // }
-      }, 500);
+      chrome.storage.sync.set({ playlist: newPlaylist }).then(() => {
+        setTimeout(() => {
+          // create list videos
+          createListVideosElement(playlistItem);
+          // if (playlistItem && playlistItem.length > 0) {
+          // }
+        }, 500);
+      });
     }
   });
 }
@@ -953,77 +1146,169 @@ function deletePlaylist(e, playlistId, index) {
 function loopPlaylistVideo(e) {
   isLoopPlaylistVideoOnce = !isLoopPlaylistVideoOnce;
   const loopPlaylistVideoOnceBtnEl = document.querySelector(
-    ".fmuzik-playlist__controls--loop-video-once"
+    `.${CLASS_NAME.BUTTON_VIDEO_REPEAT}`
   );
   if (!loopPlaylistVideoOnceBtnEl) {
     return;
   }
   if (isLoopPlaylistVideoOnce) {
     loopPlaylistVideoOnceBtnEl.classList.add(
-      "fmuzik-playlist__controls--loop-video-once__active"
+      CLASS_NAME.BUTTON_VIDEO_REPEAT_ACTIVE
     );
   } else {
     loopPlaylistVideoOnceBtnEl.classList.remove(
-      "fmuzik-playlist__controls--loop-video-once__active"
+      CLASS_NAME.BUTTON_VIDEO_REPEAT_ACTIVE
     );
   }
 }
 
 /**
  * Create list videos
- * @param {{id: string, name: string, videos: [{name: string, url: string, articleUrl: string}]}} playlist
+ * @param {playlistI} playlist
  */
-function createListVideosElement(playlist) {
+function createListVideosElement(playlistInput) {
   currentIndexPlaylistVideo = -1;
-  const listPlayer = document.querySelector(
-    ".fmuzik-playlist-panel--list-player"
-  );
-  listPlayer.classList.add("fmuzik-playlist-panel--list-player-video");
+  const listPlayer = document.querySelector(`.${CLASS_NAME.PANEL_LIST_PLAYER}`);
+  listPlayer.classList.add(CLASS_NAME.PANEL_LIST_PLAYER_VIDEO);
   const videos =
-    playlist.videos && playlist.videos.length > 0 ? playlist.videos : [];
+    playlistInput.videos && playlistInput.videos.length > 0
+      ? playlistInput.videos
+      : [];
   listPlayer.innerHTML = "";
   const label = document.querySelector(".fmuzik-playlist-panel--player-label");
-  label.innerHTML = `Playlist <span>${playlist.name}</span>:`;
-  label.insertAdjacentElement("beforebegin", createControlsPlayerElement());
+  label.setAttribute("title", playlistInput.name);
+  label.innerHTML = `Playlist <span>${playlistInput.name}</span>:`;
+  label.insertAdjacentElement(
+    "beforebegin",
+    createControlsPlayerElement(playlistInput.id)
+  );
   if (videos.length > 0) {
     currentPlaylistPlayer = videos;
-    currentPlaylistId = playlist.id;
+    currentPlaylistId = playlistInput.id;
     videos.forEach((element, index) => {
       const video = document.createElement("a");
       video.href = "javascript:void(0)";
-      video.classList.add("fmuzik-playlist__item");
-      video.setAttribute("fmuzik_playlist_id", playlist.id);
-      video.setAttribute("fmuzik_playlist_video_id", index);
-      video.setAttribute("fmuzik_playlist_video_url", element.url);
-      video.setAttribute("fmuzik_playlist_video_name", element.name);
+      video.classList.add(CLASS_NAME.LIST_ITEM);
+      video.setAttribute(ATTRIBUTE_NAME.PLAYLIST_ID, currentPlaylistId);
+      video.setAttribute(ATTRIBUTE_NAME.VIDEO_INDEX_IN_LIST, index);
+      video.setAttribute(ATTRIBUTE_NAME.VIDEO_URL, element.url);
+      video.setAttribute(ATTRIBUTE_NAME.VIDEO_NAME, element.name);
       video.setAttribute(
         "fmuzik_playlist_video_article_url",
         element.articleUrl
       );
-      video.innerHTML = `<span title="${element.name}">${element.name}</span>`;
-      video.addEventListener("click", (e) =>
-        selectVideo(e, element, index, playlist.id)
-      );
+      video.innerHTML = `<span class="fmuzik-playlist__item--name" title="${escapeRegExp(
+        element.name
+      )}">${element.name}</span>`;
 
       const icon = document.createElement("i");
       icon.classList.add("fmuzik-playlist__item--icon", "gg-play-button-o");
-      const spanTemp = document.createElement("div");
-      spanTemp.appendChild(icon);
-      video.insertAdjacentElement("afterbegin", spanTemp);
+      const iconsWrapElTemp = document.createElement("div");
+      iconsWrapElTemp.classList.add("fmuzik-playlist__item--icons-wrap");
+      iconsWrapElTemp.appendChild(icon);
+      video.insertAdjacentElement("afterbegin", iconsWrapElTemp);
 
       const divTmp = document.createElement("div");
-      divTmp.classList.add("fmuzik-playlist__item--wrap");
-      divTmp.appendChild(video);
+      divTmp.classList.add(CLASS_NAME.LIST_ITEM_WRAP);
 
-      const deleteBtnEl = document.createElement("button");
-      deleteBtnEl.classList.add("fmuzik-playlist__item__delete-btn");
-      deleteBtnEl.setAttribute("title", "Xóa video này?");
-      deleteBtnEl.addEventListener("click", (e) =>
-        deleteVideo(e, playlist.id, element, index)
+      let timeOutTmp = 0;
+      if (!element?.id) {
+        // Create new video id
+        const newId = createVideoId();
+        element.id = newId;
+        videos[index].id = newId;
+        // Save current list video to store
+        saveDataCurrentPlaylist(currentPlaylistId, videos);
+        timeOutTmp = 300;
+      }
+
+      video.addEventListener("click", (e) =>
+        selectVideo(
+          e,
+          element,
+          video.getAttribute(ATTRIBUTE_NAME.VIDEO_INDEX_IN_LIST),
+          currentPlaylistId
+        )
       );
-      divTmp.appendChild(deleteBtnEl);
-      // insert item to list
-      listPlayer.appendChild(divTmp);
+
+      // delay saveDataCurrentPlaylist if not exist id
+      setTimeout(() => {
+        divTmp.setAttribute(ATTRIBUTE_NAME.FMUZIK_VIDEO_ID, element.id);
+        divTmp.setAttribute(ATTRIBUTE_NAME.PLAYLIST_ID, playlistInput.id);
+        video.setAttribute(ATTRIBUTE_NAME.FMUZIK_VIDEO_ID, element.id);
+        divTmp.classList.add("fmuzik-playlist__videos--wrap");
+
+        // const toolBoxEl = makeToolBoxElement(false);
+        // toolBoxEl.classList.add("fmuzik-playlist__item__tool-box--video");
+
+        // divTmp.appendChild(toolBoxEl);
+        divTmp.appendChild(video);
+
+        const moreOptions = document.createElement("div");
+        moreOptions.classList.add("fmuzik-playlist__item__more-options");
+
+        const moreOptionsIcon = document.createElement("div");
+        moreOptionsIcon.classList.add(
+          "fmuzik-playlist__item__more-options__icon"
+        );
+
+        const moreOptionsIconBtnEl = document.createElement("button");
+        moreOptionsIconBtnEl.classList.add(
+          "fmuzik-playlist__item__more-options-icon-btn"
+        );
+
+        const deleteBtnEl = document.createElement("button");
+        deleteBtnEl.classList.add("fmuzik-playlist__item__delete-btn");
+        deleteBtnEl.setAttribute("title", "Xóa video này?");
+        deleteBtnEl.addEventListener("click", (e) =>
+          deleteVideo(
+            e,
+            currentPlaylistId,
+            element,
+            video.getAttribute(ATTRIBUTE_NAME.VIDEO_INDEX_IN_LIST)
+          )
+        );
+
+        const editVideoNameBtnEl = document.createElement("button");
+        editVideoNameBtnEl.classList.add(CLASS_NAME.BUTTON_EDIT_NAME);
+        editVideoNameBtnEl.setAttribute("title", "Đổi tên video này!");
+        editVideoNameBtnEl.addEventListener("click", (e) => {
+          log(`Change video name ${element.name} clicked`);
+          removeToolBoxElement(divTmp);
+
+          // Inject tool box
+          const toolBoxEl = makeToolBoxElement(
+            false,
+            element.id,
+            FMUZIK_TEXT.EDIT
+          );
+          divTmp.insertAdjacentElement("beforeend", toolBoxEl);
+
+          setTimeout(() => {
+            divTmp.classList.add(
+              "fmuzik-playlist__item--editing-name",
+              "fmuzik-playlist__item--tool-box-opened"
+            );
+            editVideoNameBtnEl.classList.add(CLASS_NAME.BUTTON_ACTIVE);
+          }, 50);
+        });
+
+        moreOptions.appendChild(moreOptionsIconBtnEl);
+        moreOptions.appendChild(editVideoNameBtnEl);
+        moreOptions.appendChild(makeSpitterIcon());
+        moreOptions.appendChild(deleteBtnEl);
+
+        divTmp.appendChild(moreOptions);
+        // insert item to list
+        listPlayer.appendChild(divTmp);
+
+        log(`currentVideoPlayingId: ${currentVideoPlayingId}`);
+        log(`element.id: ${element.id}`);
+        if (currentVideoPlayingId == element.id) {
+          updateIconPlayingOnItem(index);
+          currentIndexPlaylistVideo = index;
+        }
+      }, timeOutTmp);
     });
   } else {
     currentPlaylistPlayer = [];
@@ -1037,19 +1322,18 @@ function createListVideosElement(playlist) {
 /**
  * Select playlist
  */
-function selectPlaylist(e, playlistItem) {
+function selectPlaylist(e, playlistId) {
   e.preventDefault();
+  const playlistResult = getPlaylistById(playlistId);
   // create list videos
-  createListVideosElement(playlistItem);
+  createListVideosElement(playlistResult);
 }
 
 /**
  * Show player mask
  */
 function showPlayerMask() {
-  const listPlayer = document.querySelector(
-    ".fmuzik-playlist-panel--list-player"
-  );
+  const listPlayer = document.querySelector(`.${CLASS_NAME.PANEL_LIST_PLAYER}`);
   listPlayer.classList.add("fmuzik-playlist-panel--player-not-demand");
 
   const listPlayerMask = document.querySelector(
@@ -1061,9 +1345,7 @@ function showPlayerMask() {
  * Hide player mask
  */
 function hidePlayerMask() {
-  const listPlayer = document.querySelector(
-    ".fmuzik-playlist-panel--list-player"
-  );
+  const listPlayer = document.querySelector(`.${CLASS_NAME.PANEL_LIST_PLAYER}`);
   const listPlayerMask = document.querySelector(
     ".fmuzik-playlist-panel--player-mask"
   );
@@ -1076,10 +1358,8 @@ function hidePlayerMask() {
  * Create playlist items element
  */
 function createPlaylistItems() {
-  const listPlayer = document.querySelector(
-    ".fmuzik-playlist-panel--list-player"
-  );
-  listPlayer.classList.remove("fmuzik-playlist-panel--list-player-video");
+  const listPlayer = document.querySelector(`.${CLASS_NAME.PANEL_LIST_PLAYER}`);
+  listPlayer.classList.remove(CLASS_NAME.PANEL_LIST_PLAYER_VIDEO);
   const listPlayerMask = document.querySelector(
     ".fmuzik-playlist-panel--player-mask"
   );
@@ -1090,27 +1370,45 @@ function createPlaylistItems() {
     const label = document.querySelector(
       ".fmuzik-playlist-panel--player-label"
     );
+    label.setAttribute("title", "");
     label.innerText = "Danh sách playlist của bạn:";
     if (playlist.length > 0) {
       listPlayer.classList.remove("fmuzik-playlist-panel--player-not-demand");
       playlist.forEach((element, index) => {
         const playlistItem = document.createElement("a");
         playlistItem.href = "javascript:void(0)";
-        playlistItem.classList.add("fmuzik-playlist__item");
-        playlistItem.innerHTML = `<span title="${element.name}">${element.name}</span>`;
+        playlistItem.classList.add(CLASS_NAME.LIST_ITEM);
+        playlistItem.innerHTML = `<span class="fmuzik-playlist__item--name" title="${element.name}">${element.name}</span>`;
         playlistItem.addEventListener("click", (e) =>
-          selectPlaylist(e, element)
+          selectPlaylist(e, element.id)
         );
 
         const icon = document.createElement("i");
         icon.classList.add("fmuzik-playlist__item--icon", "gg-play-list");
-        const spanTemp = document.createElement("div");
-        spanTemp.appendChild(icon);
-        playlistItem.insertAdjacentElement("afterbegin", spanTemp);
+        const iconsWrapElTemp = document.createElement("div");
+        iconsWrapElTemp.classList.add("fmuzik-playlist__item--icons-wrap");
+        iconsWrapElTemp.appendChild(icon);
+        playlistItem.insertAdjacentElement("afterbegin", iconsWrapElTemp);
 
         const divTmp = document.createElement("div");
-        divTmp.classList.add("fmuzik-playlist__item--wrap");
+        divTmp.classList.add(CLASS_NAME.LIST_ITEM_WRAP);
+        divTmp.classList.add("fmuzik-playlist__playlists--wrap");
+        divTmp.setAttribute(ATTRIBUTE_NAME.PLAYLIST_ID, element.id);
+
         divTmp.appendChild(playlistItem);
+
+        const moreOptions = document.createElement("div");
+        moreOptions.classList.add("fmuzik-playlist__item__more-options");
+
+        const moreOptionsIcon = document.createElement("div");
+        moreOptionsIcon.classList.add(
+          "fmuzik-playlist__item__more-options__icon"
+        );
+
+        const moreOptionsIconBtnEl = document.createElement("button");
+        moreOptionsIconBtnEl.classList.add(
+          "fmuzik-playlist__item__more-options-icon-btn"
+        );
 
         const deleteBtnEl = document.createElement("button");
         deleteBtnEl.classList.add("fmuzik-playlist__item__delete-btn");
@@ -1118,7 +1416,65 @@ function createPlaylistItems() {
         deleteBtnEl.addEventListener("click", (e) =>
           deletePlaylist(e, element.id, index)
         );
-        divTmp.appendChild(deleteBtnEl);
+
+        const sharePlaylistBtnEl = document.createElement("button");
+        sharePlaylistBtnEl.classList.add(
+          "fmuzik-playlist__item__share-playlist-btn"
+        );
+        sharePlaylistBtnEl.setAttribute("title", "Chia sẻ playlist này?");
+        sharePlaylistBtnEl.addEventListener("click", (e) => {
+          log(`Share playlist ${element.name} clicked`);
+          removeToolBoxElement(divTmp);
+
+          // Inject tool box
+          const toolBoxEl = makeToolBoxElement(
+            true,
+            element.id,
+            FMUZIK_TEXT.SHARE
+          );
+          divTmp.insertAdjacentElement("beforeend", toolBoxEl);
+
+          setTimeout(() => {
+            divTmp.classList.add(
+              "fmuzik-playlist__item--sharing-playlist",
+              "fmuzik-playlist__item--tool-box-opened"
+            );
+            sharePlaylistBtnEl.classList.add(CLASS_NAME.BUTTON_ACTIVE);
+          }, 50);
+        });
+
+        const editPlaylistNameBtnEl = document.createElement("button");
+        editPlaylistNameBtnEl.classList.add(CLASS_NAME.BUTTON_EDIT_NAME);
+        editPlaylistNameBtnEl.setAttribute("title", "Đổi tên playlist này!");
+        editPlaylistNameBtnEl.addEventListener("click", (e) => {
+          log(`Change playlist name ${element.name} clicked`);
+          removeToolBoxElement(divTmp);
+
+          // Inject tool box
+          const toolBoxEl = makeToolBoxElement(
+            true,
+            element.id,
+            FMUZIK_TEXT.EDIT
+          );
+          divTmp.insertAdjacentElement("beforeend", toolBoxEl);
+
+          setTimeout(() => {
+            divTmp.classList.add(
+              "fmuzik-playlist__item--editing-name",
+              "fmuzik-playlist__item--tool-box-opened"
+            );
+            editPlaylistNameBtnEl.classList.add(CLASS_NAME.BUTTON_ACTIVE);
+          }, 50);
+        });
+
+        moreOptions.appendChild(moreOptionsIconBtnEl);
+        moreOptions.appendChild(sharePlaylistBtnEl);
+        moreOptions.appendChild(makeSpitterIcon());
+        moreOptions.appendChild(editPlaylistNameBtnEl);
+        moreOptions.appendChild(makeSpitterIcon());
+        moreOptions.appendChild(deleteBtnEl);
+
+        divTmp.appendChild(moreOptions);
         // insert item to list
         listPlayer.appendChild(divTmp);
       });
@@ -1168,6 +1524,46 @@ function createPlaylistPanelElement() {
 
     playlistPanel.appendChild(playlistPanelToggle);
 
+    const askRatingEl = document.createElement("div");
+    // askRatingEl.classList.add("fmuzik-playlist-ask-rating");
+    askRatingEl.classList.add("fmuzik-playlist-ask-rating", "d-none");
+    const askRatingContentEl = document.createElement("div");
+    askRatingContentEl.classList.add("fmuzik-playlist-ask-rating__content");
+    askRatingEl.appendChild(askRatingContentEl);
+    const askRatingContentTextEl = document.createElement("p");
+    askRatingContentTextEl.classList.add(
+      "fmuzik-playlist-ask-rating__content--text"
+    );
+    askRatingContentTextEl.innerHTML =
+      "Bạn thấy <span class='fmuzik-playlist-ask-rating__content--text-fmuzik'>FMuzik</span> tuyệt chứ?&#10;Hãy để lại <span class='fmuzik-playlist-ask-rating__content--text-rating'>đánh giá<span class='fmuzik-playlist-ask-rating__content--text-rating-hover'>05 &#9733;</span></span> cho mình nhé!";
+    const askRatingContentButtonEl = document.createElement("button");
+    askRatingContentButtonEl.classList.add(
+      "fmuzik-playlist-ask-rating__content--button"
+    );
+    askRatingContentButtonEl.innerText = "ĐẾN TRANG ĐÁNH GIÁ";
+    askRatingContentButtonEl.addEventListener("click", (e) => {
+      log("Go to rating");
+      window.open(
+        "https://chrome.google.com/webstore/detail/fmuzik/jlafgibpfjoflcblnampgeaeopeanabn",
+        "_blank"
+      );
+      isRatedToFMuzik = true;
+      isAskRatingShowing = false;
+      // save isRatedToFMuzik to store
+      chrome.storage.sync.set({ isRatedToFMuzik: true });
+      setupIsRatedDisplay();
+      setTimeout(() => {
+        askRatingEl.classList.add("fmuzik-playlist-ask-rating", "d-none");
+      }, 200);
+    });
+    const askRatingArrowEl = document.createElement("div");
+    askRatingArrowEl.classList.add("fmuzik-playlist-ask-rating__arrow");
+    askRatingContentEl.appendChild(askRatingContentTextEl);
+    askRatingContentEl.appendChild(askRatingContentButtonEl);
+    askRatingContentEl.appendChild(askRatingArrowEl);
+
+    playlistPanel.appendChild(askRatingEl);
+
     const playlistPanelPlayerMask = document.createElement("div");
     playlistPanelPlayerMask.classList.add("fmuzik-playlist-panel--player-mask");
     // playlistPanelPlayerMask.insertAdjacentHTML(
@@ -1193,12 +1589,14 @@ function createPlaylistPanelElement() {
     playlistPanelContainer.appendChild(playlistPanelPlayerLabel);
 
     const playlistPanelListPlayer = document.createElement("div");
-    playlistPanelListPlayer.classList.add("fmuzik-playlist-panel--list-player");
+    playlistPanelListPlayer.classList.add(CLASS_NAME.PANEL_LIST_PLAYER);
     playlistPanelContainer.appendChild(playlistPanelListPlayer);
 
     const credit = document.createElement("div");
     credit.classList.add("row", "text-right", "text-muted", "fmuzik-credit");
-    credit.innerHTML = `<span>FMuzik by NhutTH4</span> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" xmlns:v="https://vecta.io/nano" style="position: relative;bottom: -4px;fill: #fff;"><path d="M10 22a8 8 0 1 1 0-16 8 8 0 1 1 0 16zm0-2a6 6 0 1 0 0-12 6 6 0 1 0 0 12zm3-5a3 3 0 1 1-6 0h6zm-5-2a1 1 0 1 0 0-2 1 1 0 1 0 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 1 1 0 2zm6.625-5c-.827-.18-3.375-1.59-3.375-4.125 0-1.036.839-1.875 1.875-1.875a1.87 1.87 0 0 1 1.5.75 1.87 1.87 0 0 1 1.5-.75C21.161 2 22 2.839 22 3.875 22 6.41 19.452 7.82 18.625 8z" fill-rule="evenodd"></path></svg>
+    credit.innerHTML = `<span>FMuzik by <a class="fmuzik-msteams" href="sip:nhutth4@fpt.com">NhutTH4</a></span> <svg class="fmuzik-emotion__normal" xmlns="http://www.w3.org/2000/svg" width="24" height="24" xmlns:v="https://vecta.io/nano" style="position: relative;bottom: -4px;fill: #fff;"><path d="M10 22a8 8 0 1 1 0-16 8 8 0 1 1 0 16zm0-2a6 6 0 1 0 0-12 6 6 0 1 0 0 12zm3-5a3 3 0 1 1-6 0h6zm-5-2a1 1 0 1 0 0-2 1 1 0 1 0 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 1 1 0 2zm6.625-5c-.827-.18-3.375-1.59-3.375-4.125 0-1.036.839-1.875 1.875-1.875a1.87 1.87 0 0 1 1.5.75 1.87 1.87 0 0 1 1.5-.75C21.161 2 22 2.839 22 3.875 22 6.41 19.452 7.82 18.625 8z" fill-rule="evenodd"></path></svg> <div class="fmuzik-emotion__face-wrap">
+    <div class="fmuzik-emotion__heart-wrap"><div class="fmuzik-emotion__heart">&nbsp;</div></div>
+  </div>
     <!-- https://codepen.io/Ma5a/pen/BapbQam -->
     <div class="fmuzik__katty__wrapper">
       <div class="fmuzik__katty__cat_wrapper">
@@ -1262,7 +1660,11 @@ function createPlaylistPanelElement() {
     // create playlist items element
     createPlaylistItems();
 
-    let isKattyActive = false;
+    setTimeout(() => {
+      setupIsRatedDisplay();
+    }, 100);
+
+    isKattyActive = false;
     document
       .querySelector(".fmuzik__katty__cat")
       .addEventListener("click", (e) => {
@@ -1277,6 +1679,37 @@ function createPlaylistPanelElement() {
       });
   } else if (!activePlaylist && body && playlistPanel) {
     playlistPanel.innerHTML = "";
+  }
+}
+
+function setupIsRatedDisplay() {
+  const emotionHeartWrapEl = document.querySelector(
+    ".fmuzik-emotion__face-wrap"
+  );
+  const emotionNormalEl = document.querySelector(".fmuzik-emotion__normal");
+  if (isRatedToFMuzik) {
+    log(`isRatedToFMuzik: ${isRatedToFMuzik}`);
+    if (emotionNormalEl) {
+      emotionNormalEl.style.display = "none";
+    }
+    if (emotionHeartWrapEl) {
+      emotionHeartWrapEl.style.display = "block";
+    }
+    if (playlistPanel) {
+      playlistPanel.classList.add("fmuzik-playlist-meow-meow");
+    }
+  } else {
+    if (emotionNormalEl) {
+      emotionNormalEl.style.display = "block";
+    }
+  }
+}
+
+function setupAskRating() {
+  isAskRatingShowing = true;
+  const askRatingEl = document.querySelector(".fmuzik-playlist-ask-rating");
+  if (askRatingEl) {
+    askRatingEl.classList.remove("d-none");
   }
 }
 
@@ -1298,7 +1731,9 @@ function saveVideoToPlaylist(e, video) {
   rowFmuzikPopupPlaylistMain.innerHTML = "";
 
   // const video = document.querySelector("video[fmuzik_id=" + fmuzik_id + "]");
-  const videoUrl = video ? video.getAttribute("fmuzik_video_url") : "";
+  const videoUrl = video
+    ? video.getAttribute(ATTRIBUTE_NAME.FMUZIK_VIDEO_URL)
+    : "";
 
   // if videoUrl, try to refresh get videoUrl
   if (!videoUrl) {
@@ -1328,7 +1763,7 @@ function saveVideoToPlaylist(e, video) {
             playlistCheckboxEl.setAttribute("type", "checkbox");
             playlistCheckboxEl.id = playlistElement.id;
             playlistCheckboxEl.setAttribute(
-              "fmuzik_playlist_id",
+              ATTRIBUTE_NAME.PLAYLIST_ID,
               playlistElement.id
             );
             playlistCheckboxEl.classList.add("fmuzik-form-checkbox-input");
@@ -1359,11 +1794,194 @@ function saveVideoToPlaylist(e, video) {
           });
         }, 500);
       }
-      setTimeout(() => {
-        hidePopupPlaylistSpinner();
-      }, 500);
+      hidePopupPlaylistSpinner();
     });
   }, 600);
+}
+
+function setupSavePlaylistSharing(dataPlaylistSharing, playlistName) {
+  // showPopupPlaylistSpinner();
+  showPopupPlaylist();
+
+  log(`setupSavePlaylistSharing: ${dataPlaylistSharing}`);
+
+  const popupPlaylistContainer = document.querySelector(
+    ".fmuzik-popup-playlist--main"
+  );
+  if (popupPlaylistContainer) {
+    const playlistSharingImportContainerEl = document.createElement("div");
+    playlistSharingImportContainerEl.classList.add(
+      "fmuzik-popup-playlist--sharing-import"
+    );
+
+    const playlistSharingImportHeadEl = document.createElement("div");
+    playlistSharingImportHeadEl.classList.add(
+      "fmuzik-popup-playlist--sharing-import__head"
+    );
+    playlistSharingImportHeadEl.innerHTML = `<h5 class="fmuzik-popup-playlist--sharing-import__head--title">Playlist được chia sẻ:</h5>`;
+
+    const playlistSharingImportFootEl = document.createElement("div");
+    playlistSharingImportFootEl.classList.add(
+      "fmuzik-popup-playlist--sharing-import__foot"
+    );
+    const playlistSharingImportInputNameEl = document.createElement("input");
+    playlistSharingImportInputNameEl.classList.add(
+      "fmuzik-popup-playlist--sharing-import__input-name"
+    );
+    const newPlaylistName = playlistName.replace(
+      /^\s*(P|p)(laylist\:)\s*/g,
+      ""
+    );
+    playlistSharingImportInputNameEl.value = newPlaylistName;
+    const playlistSharingImportSaveBtnEl = document.createElement("button");
+    playlistSharingImportSaveBtnEl.addEventListener("click", (e) => {
+      if (!playlistSharingImportInputNameEl.value) {
+        showAlert(MSG_TYPE.DANGER, "Hãy nhập tên cho Playlist nhé!", 1500);
+        playlistSharingImportInputNameEl.focus();
+      } else {
+        currentDataPlaylistSharing.name =
+          playlistSharingImportInputNameEl.value;
+        log(`currentDataPlaylistSharing:`);
+        log(currentDataPlaylistSharing);
+        savePlaylistSharing();
+      }
+    });
+    playlistSharingImportSaveBtnEl.classList.add(
+      "fmuzik-popup-playlist--sharing-import__btn-save"
+    );
+    playlistSharingImportSaveBtnEl.textContent = "Lưu Playlist";
+    playlistSharingImportFootEl.innerHTML = `<label class="fmuzik-popup-playlist--sharing-import__input-name-label">Tên Playlist</label>`;
+    playlistSharingImportFootEl.appendChild(playlistSharingImportInputNameEl);
+    playlistSharingImportFootEl.appendChild(playlistSharingImportSaveBtnEl);
+
+    const playlistSharingImportMainEl = document.createElement("div");
+    playlistSharingImportMainEl.classList.add(
+      "fmuzik-popup-playlist--sharing-import__main"
+    );
+
+    currentDataPlaylistSharing = {
+      id: createPlaylistId(),
+      name: "",
+      videos: [],
+    };
+    if (Array.isArray(dataPlaylistSharing) && dataPlaylistSharing.length > 0) {
+      const totalVideos =
+        dataPlaylistSharing.length < 10 && dataPlaylistSharing.length > 0
+          ? `0${dataPlaylistSharing.length}`
+          : dataPlaylistSharing.length;
+      playlistSharingImportHeadEl.insertAdjacentHTML(
+        "beforeend",
+        `<span class="fmuzik-popup-playlist--sharing-import__head--total-videos"><span class="fmuzik-popup-playlist--sharing-import__head--total-videos-icon">&#9834</span>: ${totalVideos}</span>`
+      );
+      for (let index = 0; index < dataPlaylistSharing.length; index++) {
+        const videoImported = dataPlaylistSharing[index];
+        log(`videoImported: ${videoImported}`);
+        const videoImportedTrim = videoImported.replace(/(\[\[)/g, "");
+        const videoImportedTrimArr = videoImportedTrim.split("]]");
+        const videoName = videoImportedTrimArr[0];
+        const videoUrl = "https://fpt.workplace.com/" + videoImportedTrimArr[1];
+        log(`videoName: ${videoName}`);
+        log(`videoUrl: ${videoUrl}`);
+
+        currentDataPlaylistSharing.videos[index] = {
+          videoName: videoName,
+          videoUrl: videoUrl,
+          id: "",
+          isSaveThis: true,
+        };
+
+        const checkboxGroupEl = document.createElement("div");
+        checkboxGroupEl.classList.add("fmuzik-form-checkbox-group");
+        const checkboxIsSaveThisEl = document.createElement("input");
+        checkboxIsSaveThisEl.setAttribute("type", "checkbox");
+        checkboxIsSaveThisEl.classList.add("fmuzik-form-checkbox-input");
+        checkboxIsSaveThisEl.checked = true;
+        const videoId = createVideoId();
+        currentDataPlaylistSharing.videos[index].id = videoId;
+        checkboxIsSaveThisEl.id = videoId;
+        checkboxIsSaveThisEl.setAttribute(
+          ATTRIBUTE_NAME.FMUZIK_VIDEO_ID,
+          videoId
+        );
+        checkboxIsSaveThisEl.addEventListener("change", (e) => {
+          currentDataPlaylistSharing.videos[index].isSaveThis = Boolean(
+            e.target.checked
+          );
+        });
+        const labelForCheckboxIsSaveThisEl = document.createElement("label");
+        labelForCheckboxIsSaveThisEl.classList.add(
+          "fmuzik-form-checkbox-label"
+        );
+        labelForCheckboxIsSaveThisEl.setAttribute("for", videoId);
+        labelForCheckboxIsSaveThisEl.textContent = videoName;
+
+        checkboxGroupEl.appendChild(checkboxIsSaveThisEl);
+        checkboxGroupEl.appendChild(labelForCheckboxIsSaveThisEl);
+
+        playlistSharingImportMainEl.appendChild(checkboxGroupEl);
+      }
+    }
+
+    playlistSharingImportContainerEl.appendChild(playlistSharingImportHeadEl);
+    playlistSharingImportContainerEl.appendChild(playlistSharingImportMainEl);
+    playlistSharingImportContainerEl.appendChild(playlistSharingImportFootEl);
+    popupPlaylistContainer.appendChild(playlistSharingImportContainerEl);
+  }
+}
+
+function savePlaylistSharing() {
+  if (
+    !currentDataPlaylistSharing ||
+    currentDataPlaylistSharing.videos.length == 0 ||
+    !currentDataPlaylistSharing.videos.some((v) => v.isSaveThis)
+  ) {
+    showAlert(MSG_TYPE.DANGER, "Chọn ít nhất 01 video để lưu Playlist!", 2000);
+  } else {
+    showPopupPlaylistSpinner();
+    chrome.storage.sync.get("playlist", (store) => {
+      playlist = store && store.playlist ? store.playlist : [];
+      const newPlaylist = {
+        id: currentDataPlaylistSharing.id,
+        name: currentDataPlaylistSharing.name,
+        videos: [],
+      };
+      for (
+        let index = 0;
+        index < currentDataPlaylistSharing.videos.length;
+        index++
+      ) {
+        const playlistTmp = currentDataPlaylistSharing.videos[index];
+        if (playlistTmp.isSaveThis) {
+          newPlaylist.videos.push({
+            id: playlistTmp.id,
+            name: playlistTmp.videoName,
+            url: playlistTmp.videoUrl,
+            articleUrl: "",
+          });
+        }
+      }
+      playlist.push(newPlaylist);
+      log(`save newPlaylist done: ${newPlaylist}`);
+
+      chrome.storage.sync.set({ playlist: playlist }).then(() => {
+        createPlaylistItems();
+        if (document.querySelector(".fmuzik-playlist__controls")) {
+          document.querySelector(".fmuzik-playlist__controls").remove();
+        }
+        setTimeout(() => {
+          showAlert(
+            MSG_TYPE.SUCCESS,
+            `Lưu Playlist ${newPlaylist.name} thành công!`,
+            2000
+          );
+          hidePopupPlaylistSpinner();
+          setTimeout(() => {
+            closePopupPlaylist();
+          }, 600);
+        }, 800);
+      });
+    });
+  }
 }
 
 /**
@@ -1372,14 +1990,14 @@ function saveVideoToPlaylist(e, video) {
 function setupSaveToPlaylist(video) {
   const buttonSaveToPlaylist = video
     .closest("[data-visualcompletion=ignore]")
-    ?.querySelector(".fmuzik__save-to-playlist--btn");
+    ?.querySelector(`.${CLASS_NAME.BUTTON_SAVE_TO_PLAYLIST}`);
   const buttonSaveToPlaylistInMediaViewerMode = document.querySelector(
     "[data-name=media-viewer-nav-container]"
   );
   if (activePlaylist && !buttonSaveToPlaylist) {
     // add button save to playlist on top video
     const newButtonSaveToPlaylist = document.createElement("button");
-    newButtonSaveToPlaylist.classList.add("fmuzik__save-to-playlist--btn");
+    newButtonSaveToPlaylist.classList.add(CLASS_NAME.BUTTON_SAVE_TO_PLAYLIST);
     newButtonSaveToPlaylist.addEventListener("click", (e) =>
       saveVideoToPlaylist(e, video)
     );
@@ -1415,7 +2033,7 @@ function setupSaveToPlaylist(video) {
         video
           .closest("[data-visualcompletion=ignore]")
           ?.querySelector("[data-instancekey] [data-visualcompletion=ignore]")
-          .insertAdjacentElement("afterbegin", newButtonSaveToPlaylist);
+          ?.insertAdjacentElement("afterbegin", newButtonSaveToPlaylist);
       }
     }
   } else if (!activePlaylist) {
@@ -1425,7 +2043,7 @@ function setupSaveToPlaylist(video) {
     } else if (buttonSaveToPlaylistInMediaViewerMode) {
       const buttonInMediaViewerMode =
         buttonSaveToPlaylistInMediaViewerMode.querySelector(
-          ".fmuzik__save-to-playlist--btn"
+          `.${CLASS_NAME.BUTTON_SAVE_TO_PLAYLIST}`
         );
       if (buttonInMediaViewerMode) {
         buttonInMediaViewerMode.remove();
@@ -1434,10 +2052,13 @@ function setupSaveToPlaylist(video) {
   }
 }
 
+let listCheckVideosAttributeExistTmp = [];
+
 /**
  * Setup videos
  */
 function setupVideos() {
+  listCheckVideosAttributeExistTmp = [];
   const geminiLayoutEntity = document.querySelector(
     "[data-pagelet=GeminiLayoutEntity]"
   );
@@ -1507,11 +2128,28 @@ function setupVideos() {
     }
   }
 
-  if (oldNumOfVideos == videos.length) {
-    return;
+  if (oldNumOfVideos == videos.length && oldUrl == document.location.href) {
+    // If all videos is has fmuzik_id, fmuzik_video_url, fmuzik_video_article_url => stop setup
+    videos.forEach((v) => {
+      if (
+        v.getAttribute(ATTRIBUTE_NAME.FMUZIK_ID) &&
+        v.getAttribute(ATTRIBUTE_NAME.VIDEO_ARTICLE) &&
+        v.getAttribute(ATTRIBUTE_NAME.FMUZIK_VIDEO_URL)
+      ) {
+        listCheckVideosAttributeExistTmp.push(v);
+      }
+    });
+    // if (videos.length == 1) {
+    if (listCheckVideosAttributeExistTmp.length == videos.length) {
+      return;
+    }
+    // } else {
+    // return;
+    // }
   }
 
   oldNumOfVideos = videos.length;
+  oldUrl = document.location.href;
 
   videos.forEach((video, index) => {
     /** assign fmuzik id to video */
@@ -1552,7 +2190,7 @@ function formatLinkVideo(link) {
  * @param {HTMLVideoElement} video
  */
 function getUrlPostOfVideo(video) {
-  if (video.getAttribute("fmuzik_video_article_url")) {
+  if (video.getAttribute(ATTRIBUTE_NAME.VIDEO_ARTICLE)) {
     return;
   }
 
@@ -1592,7 +2230,7 @@ function getUrlPostOfVideo(video) {
   }
 
   video.setAttribute(
-    "fmuzik_video_article_url",
+    ATTRIBUTE_NAME.VIDEO_ARTICLE,
     formatLinkVideo(links[0].href)
   );
   log("BEGIN: link article of video:");
@@ -1608,33 +2246,53 @@ function getUrlPostOfVideo(video) {
  */
 function setupDragAndDropVideoList() {
   const tasksListElement = document.querySelector(
-    ".fmuzik-playlist-panel--list-player.fmuzik-playlist-panel--list-player-video"
+    `.${CLASS_NAME.PANEL_LIST_PLAYER}.${CLASS_NAME.PANEL_LIST_PLAYER_VIDEO}`
   );
   const taskElements = tasksListElement?.querySelectorAll(
-    ".fmuzik-playlist__item--wrap"
+    `.${CLASS_NAME.LIST_ITEM_WRAP}`
   );
 
   if (taskElements) {
     for (const task of taskElements) task.draggable = true;
 
     tasksListElement.addEventListener("dragstart", (evt) => {
-      if (evt.target.classList.contains("fmuzik-playlist__item--wrap")) {
-        evt.target.classList.add("fmuzik-playlist__item--wrap__selected");
-      } else {
-        const itemWrapTmp = evt.target.closest(".fmuzik-playlist__item--wrap");
-        if (itemWrapTmp) {
-          itemWrapTmp.classList.add("fmuzik-playlist__item--wrap__selected");
+      if (
+        evt.target.closest(`.${CLASS_NAME.PANEL_LIST_PLAYER_VIDEO}`) &&
+        !evt.target
+          .closest(`.${CLASS_NAME.PANEL_LIST_PLAYER_VIDEO}`)
+          .querySelector(".fmuzik-playlist__item--tool-box-opened")
+      ) {
+        if (evt.target.classList.contains(CLASS_NAME.LIST_ITEM_WRAP)) {
+          evt.target.classList.add("fmuzik-playlist__item--wrap__selected");
+        } else {
+          const itemWrapTmp = evt.target.closest(
+            `.${CLASS_NAME.LIST_ITEM_WRAP}`
+          );
+          if (itemWrapTmp) {
+            itemWrapTmp.classList.add("fmuzik-playlist__item--wrap__selected");
+          }
         }
       }
     });
 
     tasksListElement.addEventListener("dragend", (evt) => {
-      if (evt.target.classList.contains("fmuzik-playlist__item--wrap")) {
-        evt.target.classList.remove("fmuzik-playlist__item--wrap__selected");
-      } else {
-        const itemWrapTmp = evt.target.closest(".fmuzik-playlist__item--wrap");
-        if (itemWrapTmp) {
-          itemWrapTmp.classList.remove("fmuzik-playlist__item--wrap__selected");
+      if (
+        evt.target.closest(`.${CLASS_NAME.PANEL_LIST_PLAYER_VIDEO}`) &&
+        !evt.target
+          .closest(`.${CLASS_NAME.PANEL_LIST_PLAYER_VIDEO}`)
+          .querySelector(".fmuzik-playlist__item--tool-box-opened")
+      ) {
+        if (evt.target.classList.contains(CLASS_NAME.LIST_ITEM_WRAP)) {
+          evt.target.classList.remove("fmuzik-playlist__item--wrap__selected");
+        } else {
+          const itemWrapTmp = evt.target.closest(
+            `.${CLASS_NAME.LIST_ITEM_WRAP}`
+          );
+          if (itemWrapTmp) {
+            itemWrapTmp.classList.remove(
+              "fmuzik-playlist__item--wrap__selected"
+            );
+          }
         }
       }
     });
@@ -1642,37 +2300,48 @@ function setupDragAndDropVideoList() {
     tasksListElement.addEventListener("dragover", (evt) => {
       evt.preventDefault();
 
-      const activeElement = tasksListElement.querySelector(
-        ".fmuzik-playlist__item--wrap__selected"
-      );
-      let currentElement = evt.target;
-      if (!currentElement.classList.contains("fmuzik-playlist__item--wrap")) {
-        const itemWrapTmp = evt.target.closest(".fmuzik-playlist__item--wrap");
-        if (itemWrapTmp) {
-          currentElement = itemWrapTmp;
-        } else {
-          log("Opps! Sth wrong when handle dragover");
-        }
-      }
-
-      const isMoveable =
-        activeElement !== currentElement &&
-        currentElement.classList.contains("fmuzik-playlist__item--wrap");
-
-      if (!isMoveable) return;
-
-      const nextElement = getNextElement(evt.clientY, currentElement);
-
       if (
-        (nextElement && activeElement === nextElement.previousElementSibling) ||
-        activeElement === nextElement
+        evt.target.closest(`.${CLASS_NAME.PANEL_LIST_PLAYER_VIDEO}`) &&
+        !evt.target
+          .closest(`.${CLASS_NAME.PANEL_LIST_PLAYER_VIDEO}`)
+          .querySelector(".fmuzik-playlist__item--tool-box-opened")
       ) {
-        return;
-      }
+        const activeElement = tasksListElement.querySelector(
+          ".fmuzik-playlist__item--wrap__selected"
+        );
+        let currentElement = evt.target;
+        if (!currentElement.classList.contains(CLASS_NAME.LIST_ITEM_WRAP)) {
+          const itemWrapTmp = evt.target.closest(
+            `.${CLASS_NAME.LIST_ITEM_WRAP}`
+          );
+          if (itemWrapTmp) {
+            currentElement = itemWrapTmp;
+          } else {
+            log("Opps! Sth wrong when handle dragover");
+            return;
+          }
+        }
 
-      tasksListElement.insertBefore(activeElement, nextElement);
-      // Re-order playlist videos
-      reorderPlaylistVideos();
+        const isMoveable =
+          activeElement !== currentElement &&
+          currentElement.classList.contains(CLASS_NAME.LIST_ITEM_WRAP);
+
+        if (!isMoveable) return;
+
+        const nextElement = getNextElement(evt.clientY, currentElement);
+
+        if (
+          (nextElement &&
+            activeElement === nextElement.previousElementSibling) ||
+          activeElement === nextElement
+        ) {
+          return;
+        }
+
+        tasksListElement.insertBefore(activeElement, nextElement);
+        // Re-order playlist videos
+        reorderPlaylistVideos();
+      }
     });
   }
 }
@@ -1704,62 +2373,94 @@ function getNextElement(cursorPosition, currentElement) {
 function reorderPlaylistVideos() {
   // 1. get current video HTMLElement list
   const listPlayerVideoEl = document.querySelector(
-    ".fmuzik-playlist-panel--list-player.fmuzik-playlist-panel--list-player-video"
+    `.${CLASS_NAME.PANEL_LIST_PLAYER}.${CLASS_NAME.PANEL_LIST_PLAYER_VIDEO}`
   );
-  const videoItemWrapElArr = listPlayerVideoEl.querySelectorAll(
-    ".fmuzik-playlist__item--wrap"
-  );
-  if (!videoItemWrapElArr || videoItemWrapElArr.length <= 1) {
-    return;
-  }
-  const newPlaylistPlayer = [];
-  const fmuzilPlayerEl = document.getElementById("fmuzik-player");
+  if (listPlayerVideoEl) {
+    const videoItemWrapElArr = listPlayerVideoEl.querySelectorAll(
+      `.${CLASS_NAME.LIST_ITEM_WRAP}`
+    );
+    if (!videoItemWrapElArr || videoItemWrapElArr.length <= 1) {
+      return;
+    }
+    const newPlaylistPlayer = [];
+    const fmuzilPlayerEl = document.getElementById("fmuzik-player");
 
-  let currentPlaylistOrderedId = "";
+    let currentPlaylistOrderedId = "";
 
-  for (let index = 0; index < videoItemWrapElArr.length; index++) {
-    const videoItemWrapEl = videoItemWrapElArr[index];
-    const videoItemEl = videoItemWrapEl.querySelector(".fmuzik-playlist__item");
-    const videoItem = {
-      name: videoItemEl.getAttribute("fmuzik_playlist_video_name"),
-      url: videoItemEl.getAttribute("fmuzik_playlist_video_url"),
-    };
-    // 2. update position of currentPlaylistPlayer
-    videoItemEl.setAttribute("fmuzik_playlist_video_id", index);
+    for (let index = 0; index < videoItemWrapElArr.length; index++) {
+      const videoItemWrapEl = videoItemWrapElArr[index];
+      const videoItemEl = videoItemWrapEl.querySelector(
+        `.${CLASS_NAME.LIST_ITEM}`
+      );
+      const videoItem = {
+        name: videoItemEl.getAttribute(ATTRIBUTE_NAME.VIDEO_NAME),
+        url: videoItemEl.getAttribute(ATTRIBUTE_NAME.VIDEO_URL),
+      };
+      // 2. update position of currentPlaylistPlayer
+      videoItemEl.setAttribute(ATTRIBUTE_NAME.VIDEO_INDEX_IN_LIST, index);
 
-    if (
-      currentIndexPlaylistVideo !== -1 &&
-      videoItemEl.getAttribute("fmuzik_playlist_id") ==
-        fmuzilPlayerEl.dataset.fmuzikPlaylistId
-    ) {
       if (
-        videoItemEl.getAttribute("fmuzik_playlist_video_url") ==
-        fmuzilPlayerEl.dataset.fmuzikPlaylistVideoUrl
+        currentIndexPlaylistVideo !== -1 &&
+        videoItemEl.getAttribute(ATTRIBUTE_NAME.PLAYLIST_ID) ==
+          fmuzilPlayerEl.dataset.fmuzikPlaylistId
       ) {
         if (
-          videoItemEl.getAttribute("fmuzik_playlist_video_id") ===
-          fmuzilPlayerEl.dataset.fmuzikPlaylistVideoId
+          videoItemEl.getAttribute(ATTRIBUTE_NAME.VIDEO_URL) ==
+          fmuzilPlayerEl.dataset.fmuzikPlaylistVideoUrl
         ) {
-          // detect action re-order nothing changes then return(stop)
-          // return;
-        } else {
-          // 3. update currentIndexPlaylistVideo
-          fmuzilPlayerEl.dataset.fmuzikPlaylistVideoId = index;
-          currentIndexPlaylistVideo = index;
+          if (
+            videoItemEl.getAttribute(ATTRIBUTE_NAME.VIDEO_INDEX_IN_LIST) ===
+            fmuzilPlayerEl.dataset.fmuzikPlaylistVideoId
+          ) {
+            // detect action re-order nothing changes then return(stop)
+            // return;
+          } else {
+            // 3. update currentIndexPlaylistVideo
+            fmuzilPlayerEl.dataset.fmuzikPlaylistVideoId = index;
+            currentIndexPlaylistVideo = index;
+          }
         }
       }
+
+      if (!currentPlaylistOrderedId) {
+        currentPlaylistOrderedId = videoItemEl.getAttribute(
+          ATTRIBUTE_NAME.PLAYLIST_ID
+        );
+      }
+
+      newPlaylistPlayer.push(videoItem);
     }
 
-    if (!currentPlaylistOrderedId) {
-      currentPlaylistOrderedId = videoItemEl.getAttribute("fmuzik_playlist_id");
-    }
+    currentPlaylistPlayer = newPlaylistPlayer;
 
-    newPlaylistPlayer.push(videoItem);
+    // 4. save currentPlaylistPlayer to storage
+    chrome.storage.sync.get("playlist", (data) => {
+      playlist = data && data.playlist ? data.playlist : [];
+
+      if (!playlist || playlist.length == 0) {
+        showAlert(MSG_TYPE.DANGER, MSG.REORDER_PLAYLIST_VIDEO_ERROR_ON_SAVE);
+        return setTimeout(() => {
+          hideAlert();
+        }, 1000);
+      } else {
+        const indexOfCurrentPlaylistOrdered = playlist.findIndex(
+          (item) => item.id == currentPlaylistOrderedId
+        );
+        if (indexOfCurrentPlaylistOrdered > -1) {
+          playlist[indexOfCurrentPlaylistOrdered].videos = newPlaylistPlayer;
+
+          chrome.storage.sync.set({ playlist: playlist });
+          log("save reorder success!");
+        }
+      }
+    });
   }
+}
 
-  currentPlaylistPlayer = newPlaylistPlayer;
-
-  // 4. save currentPlaylistPlayer to storage
+function saveDataCurrentPlaylist(
+  currentPlaylistIdNeedToSave,
+  newPlaylistPlayer
+) {
   chrome.storage.sync.get("playlist", (data) => {
     playlist = data && data.playlist ? data.playlist : [];
 
@@ -1769,14 +2470,134 @@ function reorderPlaylistVideos() {
         hideAlert();
       }, 1000);
     } else {
-      const indexOfCurrentPlaylistOrdered = playlist.findIndex(
-        (item) => item.id == currentPlaylistOrderedId
+      const indexOfCurrentPlaylistNeedToSave = playlist.findIndex(
+        (p) => p.id == currentPlaylistIdNeedToSave
       );
-      if (indexOfCurrentPlaylistOrdered > -1) {
-        playlist[indexOfCurrentPlaylistOrdered].videos = newPlaylistPlayer;
+      if (indexOfCurrentPlaylistNeedToSave > -1) {
+        playlist[indexOfCurrentPlaylistNeedToSave].videos = newPlaylistPlayer;
+      }
+      if (Array.isArray(newPlaylistPlayer) && newPlaylistPlayer.length > 0) {
+        chrome.storage.sync.set({ playlist: playlist });
+        log(
+          "save playlist " +
+            playlist[indexOfCurrentPlaylistNeedToSave].name +
+            " success!"
+        );
+      }
+    }
+  });
+}
+
+/**
+ * savePlaylistName
+ * @param {string} playlistId
+ * @param {string} playlistName
+ * @param {HTMLDivElement} toolBoxEl
+ */
+function savePlaylistName(playlistId, playlistName, toolBoxEl = null) {
+  chrome.storage.sync.get("playlist", (data) => {
+    playlist = data && data.playlist ? data.playlist : [];
+
+    if (!playlist || playlist.length == 0) {
+      showAlert(MSG_TYPE.DANGER, "Lưu playlist thất bại!", 1000);
+    } else {
+      const indexOfCurrentPlaylistNeedToSave = playlist.findIndex(
+        (p) => p.id == playlistId
+      );
+      if (indexOfCurrentPlaylistNeedToSave > -1) {
+        playlist[indexOfCurrentPlaylistNeedToSave].name = playlistName;
 
         chrome.storage.sync.set({ playlist: playlist });
-        log("save reorder success!");
+        log(
+          "save playlist " +
+            playlist[indexOfCurrentPlaylistNeedToSave].name +
+            " success!"
+        );
+        if (toolBoxEl) {
+          showMsgOnItem(
+            MSG_TYPE.SUCCESS,
+            "Đã cập nhật tên playlist!",
+            toolBoxEl.closest(`.${CLASS_NAME.LIST_ITEM_WRAP}`)
+          );
+
+          // Change name playlist in DOM
+          const playlistNameLabel = toolBoxEl.parentElement.querySelector(
+            ".fmuzik-playlist__item--name"
+          );
+          if (playlistNameLabel) {
+            playlistNameLabel.textContent = playlistName;
+            playlistNameLabel.setAttribute("title", playlistName);
+          }
+
+          // Remove tool box from DOM
+          setTimeout(() => {
+            selfRemoveToolBoxElement(toolBoxEl);
+          }, 300);
+        }
+      }
+    }
+  });
+}
+
+/**
+ * saveVideoName
+ * @param {string} playlistId
+ * @param {string} videoId
+ * @param {string} videoName
+ * @param {HTMLDivElement} toolBoxEl
+ */
+function saveVideoName(playlistId, videoId, videoName, toolBoxEl = null) {
+  chrome.storage.sync.get("playlist", (data) => {
+    playlist = data && data.playlist ? data.playlist : [];
+
+    if (!playlist || playlist.length == 0) {
+      showAlert(MSG_TYPE.DANGER, "Lưu playlist thất bại!");
+      return setTimeout(() => {
+        hideAlert();
+      }, 1000);
+    } else {
+      const indexOfCurrentPlaylistNeedToSave = playlist.findIndex(
+        (p) => p.id == playlistId
+      );
+      if (indexOfCurrentPlaylistNeedToSave > -1) {
+        const indexOfCurrentVideoNeedToSave = playlist[
+          indexOfCurrentPlaylistNeedToSave
+        ].videos.findIndex((v) => v.id == videoId);
+        if (indexOfCurrentVideoNeedToSave > -1) {
+          playlist[indexOfCurrentPlaylistNeedToSave].videos[
+            indexOfCurrentVideoNeedToSave
+          ].name = videoName;
+
+          chrome.storage.sync.set({ playlist: playlist });
+          log(
+            "save video " +
+              playlist[indexOfCurrentPlaylistNeedToSave].videos[
+                indexOfCurrentVideoNeedToSave
+              ].name +
+              " success!"
+          );
+          if (toolBoxEl) {
+            showMsgOnItem(
+              MSG_TYPE.SUCCESS,
+              "Đã cập nhật tên video!",
+              toolBoxEl.closest(`.${CLASS_NAME.LIST_ITEM_WRAP}`)
+            );
+
+            // Change name video in DOM
+            const videoNameLabel = toolBoxEl.parentElement.querySelector(
+              ".fmuzik-playlist__item--name"
+            );
+            if (videoNameLabel) {
+              videoNameLabel.textContent = videoName;
+              videoNameLabel.setAttribute("title", escapeRegExp(videoName));
+            }
+
+            // Remove tool box from DOM
+            setTimeout(() => {
+              selfRemoveToolBoxElement(toolBoxEl);
+            }, 300);
+          }
+        }
       }
     }
   });
@@ -1881,14 +2702,74 @@ function kattyInit() {
     walk();
   };
 
+  let myTimeout = setTimeout(() => {}, 0);
   const turnRight = () => {
-    cat.style.left = `${pos.x - 8}px`;
+    const posLeft = pos.x - 8;
+    cat.style.left = `${posLeft}px`;
+    const fmuzikEmotionHeartActiveHappyEl = fmuzikContainerEl.querySelector(
+      ".fmuzik-emotion__heart--active-happy"
+    );
+    if (posLeft > 50) {
+      if (fmuzikEmotionHeartActiveHappyEl) {
+        clearTimeout(myTimeout);
+        fmuzikEmotionHeartActiveHappyEl.classList.remove(
+          "fmuzik-emotion__heart--active-happy"
+        );
+      }
+    }
     cat.classList.remove("fmuzik__katty__face_left");
     cat.classList.add("fmuzik__katty__face_right");
   };
 
+  let isStopHeartBeat = false;
   const turnLeft = () => {
-    cat.style.left = `${pos.x - 180}px`;
+    const posLeft = pos.x - 200;
+    cat.style.left = `${posLeft}px`;
+    const fmuzikEmotionHeartEl = fmuzikContainerEl.querySelector(
+      ".fmuzik-emotion__heart"
+    );
+    if (posLeft < -214) {
+      if (fmuzikEmotionHeartEl) {
+        if (
+          fmuzikEmotionHeartEl.classList.contains(
+            "fmuzik-emotion__heart--active"
+          )
+        ) {
+          if (
+            !fmuzikEmotionHeartEl.classList.contains(
+              "fmuzik-emotion__heart--active-happy"
+            )
+          ) {
+            // clearTimeout(myTimeout);
+            if (!isStopHeartBeat) {
+              fmuzikEmotionHeartEl.classList.add(
+                "fmuzik-emotion__heart--active-happy"
+              );
+              isStopHeartBeat = true;
+              myTimeout = setTimeout(() => {
+                fmuzikEmotionHeartEl.classList.remove(
+                  "fmuzik-emotion__heart--active-happy"
+                );
+              }, 9100);
+            }
+          }
+        } else {
+          fmuzikEmotionHeartEl.classList.add("fmuzik-emotion__heart--active");
+        }
+
+        // fmuzikEmotionHeartEl.classList.remove("fmuzik-emotion__heart--active");
+        // setTimeout(() => {
+        // }, 100);
+      }
+    } else {
+      if (fmuzikEmotionHeartEl) {
+        clearTimeout(myTimeout);
+        isStopHeartBeat = false;
+        fmuzikEmotionHeartEl.classList.remove(
+          "fmuzik-emotion__heart--active-happy"
+        );
+      }
+    }
     cat.classList.remove("fmuzik__katty__face_right");
     cat.classList.add("fmuzik__katty__face_left");
   };
@@ -1925,7 +2806,7 @@ function kattyInit() {
       (cat.classList.contains("fmuzik__katty__face_right") &&
         pos.x - 8 === cat.offsetLeft) ||
       (cat.classList.contains("fmuzik__katty__face_left") &&
-        pos.x - 180 === cat.offsetLeft)
+        pos.x - 200 === cat.offsetLeft)
     ) {
       legs.forEach((leg) => leg.classList.remove("fmuzik__katty__walk"));
     }
@@ -1939,6 +2820,9 @@ function kattyInit() {
   }, 100);
 
   setInterval(() => {
+    if (isAskRatingShowing) {
+      return jump();
+    }
     if (!pos.x || !pos.y) return;
     jump();
   }, 1000);
@@ -1948,6 +2832,439 @@ function kattyInit() {
   );
   fmuzikContainerEl.addEventListener("mousemove", handleMouseMotion);
   fmuzikContainerEl.addEventListener("mousemove", handleTouchMotion);
+}
+
+/**
+ * makeSpitterIcon
+ * @returns {HTMLSpanElement} spliterEl
+ */
+function makeSpitterIcon() {
+  const spliterEl = document.createElement("span");
+  spliterEl.classList.add("fmuzik-splitter-icon");
+  return spliterEl;
+}
+
+/**
+ * makeToolBoxElement
+ * @param {boolean} isBoxPlaylist
+ * @param {string} id: video|playlist id
+ * @param {string} options: other options
+ * @returns {HTMLDivElement} toolBoxEl
+ */
+function makeToolBoxElement(isBoxPlaylist, id, options = "") {
+  const toolBoxEl = document.createElement("div");
+  toolBoxEl.classList.add("fmuzik-playlist__item__tool-box");
+
+  const labelBoxEl = document.createElement("span");
+  labelBoxEl.classList.add("fmuzik-playlist__item__tool-box--label");
+  toolBoxEl.appendChild(labelBoxEl);
+
+  const inputEl = document.createElement("input");
+  inputEl.classList.add("fmuzik-playlist__item__tool-box--input");
+  toolBoxEl.appendChild(inputEl);
+
+  let playlistResult;
+  let videoResult;
+
+  if (isBoxPlaylist) {
+    toolBoxEl.classList.add("fmuzik-playlist__item__tool-box--playlist");
+    playlistResult = getPlaylistById(id);
+  } else {
+    toolBoxEl.classList.add("fmuzik-playlist__item__tool-box--video");
+    videoResult = getVideoById(id);
+  }
+
+  if (options === FMUZIK_TEXT.EDIT) {
+    const saveBtnEl = document.createElement("button");
+    saveBtnEl.classList.add("fmuzik-playlist__item__tool-box--save-btn");
+    saveBtnEl.textContent = "Lưu";
+    saveBtnEl.addEventListener("click", (e) => {
+      log("fmuzik-playlist__item__tool-box--save-btn clicked:", e);
+      if (inputEl.value) {
+        inputEl.classList.remove(
+          "fmuzik-playlist__item__tool-box--input-invalid"
+        );
+        const currentPlaylistIdTmp = toolBoxEl.parentElement.getAttribute(
+          ATTRIBUTE_NAME.PLAYLIST_ID
+        );
+        if (isBoxPlaylist) {
+          // Edit current playlist
+          savePlaylistName(currentPlaylistIdTmp, inputEl.value, toolBoxEl);
+        } else {
+          // Edit current video
+          const currentVideoIdTmp = toolBoxEl.parentElement.getAttribute(
+            ATTRIBUTE_NAME.FMUZIK_VIDEO_ID
+          );
+          saveVideoName(
+            currentPlaylistIdTmp,
+            currentVideoIdTmp,
+            inputEl.value,
+            toolBoxEl
+          );
+        }
+      } else {
+        // Input is empty
+        inputEl.classList.add("fmuzik-playlist__item__tool-box--input-invalid");
+        inputEl.focus();
+      }
+    });
+    toolBoxEl.appendChild(saveBtnEl);
+
+    if (isBoxPlaylist) {
+      if (playlistResult) {
+        inputEl.value = playlistResult.name;
+      }
+    } else {
+      if (videoResult) {
+        inputEl.value = videoResult.name;
+      }
+    }
+  }
+
+  if (isBoxPlaylist && options === FMUZIK_TEXT.SHARE) {
+    // inputEl.readOnly = true;
+
+    const copyBtnEl = document.createElement("button");
+    copyBtnEl.classList.add("fmuzik-playlist__item__tool-box--copy-btn");
+    copyBtnEl.textContent = "Chia sẻ";
+    copyBtnEl.addEventListener("click", (e) => {
+      log("fmuzik-playlist__item__tool-box--copy-btn clicked:", e);
+      if (inputEl.value) {
+        inputEl.classList.remove(
+          "fmuzik-playlist__item__tool-box--input-invalid"
+        );
+        const currentPlaylistIdTmp = toolBoxEl.parentElement.getAttribute(
+          ATTRIBUTE_NAME.PLAYLIST_ID
+        );
+
+        const urlPlaylistSharing = makeURLPlaylistSharing(currentPlaylistIdTmp);
+
+        copyPlaylistSharingToClipboard(
+          inputEl.value,
+          urlPlaylistSharing,
+          toolBoxEl
+        );
+      } else {
+        // Input is empty
+        inputEl.classList.add("fmuzik-playlist__item__tool-box--input-invalid");
+        inputEl.focus();
+      }
+    });
+    toolBoxEl.appendChild(copyBtnEl);
+
+    if (isBoxPlaylist) {
+      if (playlistResult) {
+        inputEl.value = `Playlist: ${playlistResult.name} | Chia sẻ bởi FMuzik`;
+      }
+    }
+  }
+
+  const cancelBtnEl = document.createElement("button");
+  cancelBtnEl.classList.add("fmuzik-playlist__item__tool-box--cancel-btn");
+  cancelBtnEl.textContent = "Hủy bỏ";
+  cancelBtnEl.addEventListener("click", (e) => {
+    log("fmuzik-playlist__item__tool-box--cancel-btn clicked:", e);
+    selfRemoveToolBoxElement(toolBoxEl);
+  });
+  toolBoxEl.appendChild(cancelBtnEl);
+
+  return toolBoxEl;
+}
+
+/**
+ * removeToolBoxElement
+ * @param {HTMLDivElement} parent
+ */
+function removeToolBoxElement(parent) {
+  parent.querySelector(".fmuzik-playlist__item__tool-box")?.remove();
+  removeToolBoxClasses(parent);
+}
+
+/**
+ * removeToolBoxClasses
+ * @param {HTMLDivElement} parent
+ */
+function removeToolBoxClasses(parent) {
+  parent
+    .querySelector(`.${CLASS_NAME.BUTTON_ACTIVE}`)
+    ?.classList.remove(CLASS_NAME.BUTTON_ACTIVE);
+  parent.classList.remove("fmuzik-playlist__item--tool-box-opened");
+  parent.classList.remove("fmuzik-playlist__item--sharing-playlist");
+  parent.classList.remove("fmuzik-playlist__item--editing-name");
+}
+
+/**
+ * removeToolBoxClasses
+ * @param {HTMLDivElement} toolBoxEl
+ */
+function selfRemoveToolBoxElement(toolBoxEl) {
+  removeToolBoxClasses(toolBoxEl.parentElement);
+  setTimeout(() => {
+    toolBoxEl.remove();
+  }, 700);
+}
+
+/**
+ * getPlaylistById
+ * @param {string|number} id
+ * @returns {playlistI|null} playlist | null
+ */
+function getPlaylistById(id) {
+  const playlistResult = playlist.filter((p) => String(p.id) === String(id));
+  return playlistResult.length > 0 ? playlistResult[0] : null;
+}
+
+/**
+ * getVideoById
+ * @param {string} id
+ * @returns {videoI|null} video | null
+ */
+function getVideoById(id) {
+  let videoResult = null;
+  playlist.map((p) => {
+    const videoResultTmp = p.videos.filter((v) => String(v.id) === String(id));
+    if (videoResultTmp.length > 0) {
+      videoResult = videoResultTmp[0];
+      return videoResult;
+    }
+  });
+  return videoResult;
+}
+
+/**
+ * makeURLPlaylistSharing
+ * @param {string} idPlaylist
+ * @returns urlPlaylistSharing
+ */
+function makeURLPlaylistSharing(idPlaylist) {
+  let urlPlaylistSharing = "";
+  const playlistToShare = playlist.filter((p) => p.id == idPlaylist)?.[0];
+  if (playlistToShare) {
+    playlistToShare.videos.forEach((v, i) => {
+      if (!urlPlaylistSharing) {
+        urlPlaylistSharing += "http://fmuzikplaylistsharing.com/?fmuzik=";
+      } else {
+        urlPlaylistSharing += FMUZIK_TEXT.FMUZIK_PLAYLIST_SHARING_SPLIT_STR;
+      }
+      // "Despacito" -- Luis Fonsi ft. Daddy Yankee
+      // https://fpt.workplace.com/100079341576108/videos/982434736510046
+      // => [["Despacito" -- Luis Fonsi ft. Daddy Yankee]]100079341576108/videos/982434736510046
+      urlPlaylistSharing += `[[${v.name}]]${v.url.replace(
+        "https://fpt.workplace.com/",
+        ""
+      )}`;
+    });
+  }
+  return urlPlaylistSharing + FMUZIK_TEXT.FMUZIK_PLAYLIST_SHARING_END_FLAG;
+}
+
+/**
+ * copyPlaylistSharingToClipboard
+ * @param {string} caption
+ * @param {string} urlPlaylistSharing
+ * @param {HTMLDivElement} toolBoxEl
+ */
+function copyPlaylistSharingToClipboard(
+  caption,
+  urlPlaylistSharing,
+  toolBoxEl = null
+) {
+  const divFake = document.createElement("div");
+  const captionEl = document.createElement("span");
+  captionEl.textContent = caption;
+  const aEl = document.createElement("a");
+  aEl.href = urlPlaylistSharing;
+  aEl.appendChild(captionEl);
+  divFake.appendChild(aEl);
+  divFake.classList.add("fmuzik-playlist-sharing");
+  document.body.appendChild(divFake);
+
+  // https://stackoverflow.com/questions/985272/selecting-text-in-an-element-akin-to-highlighting-with-your-mouse
+  if (document.body.createTextRange) {
+    const range = document.body.createTextRange();
+    range.moveToElementText(aEl);
+    range.select();
+    document.execCommand("copy");
+  } else if (window.getSelection) {
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(aEl);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    document.execCommand("copy");
+  } else {
+    log("Could not select text in node: Unsupported browser.");
+  }
+  if (toolBoxEl) {
+    showMsgOnItem(
+      MSG_TYPE.SUCCESS,
+      "Copy playlist thành công!",
+      toolBoxEl.closest(`.${CLASS_NAME.LIST_ITEM_WRAP}`)
+    );
+  }
+  setTimeout(() => {
+    divFake.remove();
+    if (toolBoxEl) {
+      selfRemoveToolBoxElement(toolBoxEl);
+    }
+  }, 500);
+  // navigator.clipboard.write([aEl]);
+}
+
+/**
+ * showMsgOnItem
+ * @param {'info'|'error'|'success'} msgType info | error | success
+ * @param {string} msgContent
+ * @param {HTMLDivElement} itemWrapEl fmuzik-playlist__item--wrap
+ */
+function showMsgOnItem(msgType, msgContent, itemWrapEl) {
+  const msgEl = document.createElement("span");
+  msgEl.classList.add("fmuzik-playlist__item--msg");
+  itemWrapEl.insertAdjacentElement("afterbegin", msgEl);
+
+  msgEl.textContent = msgContent;
+  setTimeout(() => {
+    switch (msgType) {
+      case MSG_TYPE.SUCCESS:
+        msgEl.classList.add("fmuzik-playlist__item--msg-success");
+        break;
+      case MSG_TYPE.INFO:
+        msgEl.classList.add("fmuzik-playlist__item--msg-info");
+        break;
+      case MSG_TYPE.ERROR:
+        msgEl.classList.add("fmuzik-playlist__item--msg-error");
+        break;
+
+      default:
+        break;
+    }
+    msgEl.classList.add("fmuzik-playlist__item--msg-active");
+
+    setTimeout(() => {
+      msgEl.remove();
+    }, 5000);
+  }, 100);
+}
+
+function shuffleVideos(playlistId) {
+  // Get list videos in DOM
+  let listItems = document.querySelector(
+    `.${CLASS_NAME.PANEL_LIST_PLAYER_VIDEO}`
+  )?.children;
+  log(listItems);
+  if (listItems && listItems.length) {
+    // Shuffle the playlist
+    listItems = Array.prototype.slice.call(listItems);
+    listItems.sort(() => Math.random() - 0.5);
+
+    const listPlayer = document.querySelector(
+      `.${CLASS_NAME.PANEL_LIST_PLAYER_VIDEO}`
+    );
+    const newCurrentPlaylistPlayer = [...currentPlaylistPlayer];
+    for (let index = 0; index < listItems.length; index++) {
+      const detatchedItem = listPlayer.removeChild(listItems[index]);
+
+      const itemEl = detatchedItem.querySelector(`.${CLASS_NAME.LIST_ITEM}`);
+      itemEl.setAttribute(ATTRIBUTE_NAME.VIDEO_INDEX_IN_LIST, index);
+      const itemVideoId = itemEl.getAttribute(ATTRIBUTE_NAME.FMUZIK_VIDEO_ID);
+
+      listPlayer.appendChild(detatchedItem);
+
+      // Update currentIndexPlaylistVideo
+      if (detatchedItem.classList.contains("fmuzik-playlist__item--playing")) {
+        currentIndexPlaylistVideo = index;
+      }
+
+      // Update new currentPlaylistPlayer
+      newCurrentPlaylistPlayer[index] = currentPlaylistPlayer.filter(
+        (v) => v.id == itemVideoId
+      )[0];
+    }
+    currentPlaylistPlayer = newCurrentPlaylistPlayer;
+  }
+}
+
+/**
+ * updateIconPlayingOnItem
+ * @param {number} currentIndexPlaylistVideoTmp
+ */
+function updateIconPlayingOnItem(currentIndexPlaylistVideoTmp) {
+  const currentVideoPlayingEl = playlistPanel.querySelector(
+    ".fmuzik-playlist__item--playing"
+  );
+  if (currentVideoPlayingEl) {
+    currentVideoPlayingEl.classList.remove("fmuzik-playlist__item--playing");
+  }
+
+  const itemEl = playlistPanel.querySelector(
+    `[${ATTRIBUTE_NAME.VIDEO_INDEX_IN_LIST}="${currentIndexPlaylistVideoTmp}"]`
+  );
+  if (itemEl) {
+    itemEl.parentElement.classList.add("fmuzik-playlist__item--playing");
+  }
+}
+
+function fmuzikSharingSetup() {
+  const fmuzikSharingElements = document.body.querySelectorAll(
+    `a[href*="${FMUZIK_TEXT.FMUZIK_PLAYLIST_SHARING_HREF_KEYWORD}"]`
+  );
+  if (fmuzikSharingElements && fmuzikSharingElements.length > 0) {
+    for (let index = 0; index < fmuzikSharingElements.length; index++) {
+      const fmuzikSharingEl = fmuzikSharingElements[index];
+      if (
+        !fmuzikSharingEl.classList.contains("fmuzik-playlist-sharing-item") &&
+        fmuzikSharingEl.parentElement.tagName.toLowerCase() == "span" &&
+        !fmuzikSharingEl.parentElement.querySelector(
+          ".fmuzik-playlist-sharing-item__get-playlist"
+        )
+      ) {
+        fmuzikSharingEl.classList.add("fmuzik-playlist-sharing-item");
+
+        const getPlaylistSharingBtn = document.createElement("button");
+        getPlaylistSharingBtn.classList.add(
+          "fmuzik-playlist-sharing-item__get-playlist"
+        );
+        getPlaylistSharingBtn.innerHTML = `<span class="fmuzik-playlist-sharing-item__get-playlist--icon"></span><span class="fmuzik-playlist-sharing-item__get-playlist--label">Save Playlist</span><span class="fmuzik-playlist-sharing-item__get-playlist--icon fmuzik-playlist-sharing-item__get-playlist--icon-save"></span>`;
+
+        getPlaylistSharingBtn.addEventListener("click", (e) => {
+          log("getPlaylistSharingBtn clicked");
+          const hrefSharing = fmuzikSharingEl.getAttribute("href");
+
+          let playlistDataTrimmed =
+            "" +
+            hrefSharing
+              .replace(new RegExp(`^.*(fmuzikplaylistsharing\.com)`, "g"), "")
+              .replace(new RegExp(`(%2F%3Ffmuzik%3D)`, "g"), "")
+              .replace(new RegExp(`(fmuzikplaylistsharingend).*`, "g"), "");
+          playlistDataTrimmed = decodeURIComponent(playlistDataTrimmed);
+          playlistDataTrimmed = decodeURI(playlistDataTrimmed);
+          playlistDataTrimmed = playlistDataTrimmed.replace(
+            /(\/\?fmuzik\=)/g,
+            ""
+          );
+          log(`fmuzikSharingEl textContent: ${fmuzikSharingEl.textContent}`);
+          log(`hrefSharing: ${hrefSharing}`);
+          log(`playlistDataTrimmed: ${playlistDataTrimmed}`);
+
+          const playlistDataArr = playlistDataTrimmed.split(
+            FMUZIK_TEXT.FMUZIK_PLAYLIST_SHARING_SPLIT_STR
+          );
+          log(`playlistDataArr: ${playlistDataArr}`);
+
+          // import playlist
+          setupSavePlaylistSharing(
+            playlistDataArr,
+            fmuzikSharingEl.textContent
+          );
+        });
+
+        fmuzikSharingEl.parentElement.insertAdjacentElement(
+          "afterbegin",
+          getPlaylistSharingBtn
+        );
+      }
+    }
+  }
 }
 
 /**
@@ -1965,55 +3282,19 @@ function fmuzikInit() {
      */
     let bodyList = document.querySelector("body");
 
+    let isStillSetup = false;
+    let isStillScrollSetup = false;
+
     let observer = new MutationObserver(function (mutations) {
+      isStillSetup = true;
       mutations.forEach(function (mutation) {
         // if (oldHref != document.location.href) {
         //   oldHref = document.location.href;
         // }
         /* Changed ! your code here */
-        if (
-          (!statusInit && checkStartCondition()) ||
-          (oldHref != document.location.href && checkStartCondition())
-        ) {
-          statusInit = true;
-          oldHref = document.location.href;
-          oldNumOfVideos = 0;
-          // Start FMuzik here
-
-          // Load module
-          // Setup videos
-          setupVideos();
-          // setup alert
-          createAlertElement();
-          // Create layout panel
-          // Setup playlist panel
-          createPlaylistPanelElement();
-          // Setup popup playlist
-          setupPopupPlaylist();
-        } else {
-          if (oldHref != document.location.href) {
-            statusInit = false;
-            oldHref = document.location.href;
-            /** reset list videos */
-            oldNumOfVideos = 0;
-            if (playlistPanel) {
-              playlistPanel.classList.add("d-none");
-            }
-          }
-        }
-        if (
-          statusInit &&
-          oldHref == document.location.href &&
-          checkStartCondition()
-        ) {
-          // Trigger when anything in DOM changed
-          // Setup videos
-          setupVideos();
-          if (playlistPanel && playlistPanel.classList.contains("d-none")) {
-            playlistPanel.classList.remove("d-none");
-          }
-        }
+        doSetup();
       });
+      isStillSetup = false;
     });
 
     let config = {
@@ -2023,7 +3304,71 @@ function fmuzikInit() {
     };
 
     observer.observe(bodyList, config);
+    document.addEventListener("scroll", () => {
+      if (isStillSetup) {
+        return;
+      }
+      isStillScrollSetup = true;
+      isStillSetup = true;
+      doSetup();
+      isStillSetup = false;
+      isStillScrollSetup = false;
+    });
   }, 100);
+}
+
+function doSetup() {
+  // Trigger when navigate to another page
+  if (
+    (!statusInit && checkStartCondition()) ||
+    (oldHref != document.location.href && checkStartCondition())
+  ) {
+    statusInit = true;
+    oldHref = document.location.href;
+    oldNumOfVideos = 0;
+    // Start FMuzik here
+
+    // Load module
+    // Setup videos
+    setupVideos();
+    // Setup sharing playlist
+    fmuzikSharingSetup();
+    // setup alert
+    createAlertElement();
+    // Create layout panel
+    // Setup playlist panel
+    createPlaylistPanelElement();
+    // Setup popup playlist
+    setupPopupPlaylist();
+  } else {
+    if (oldHref != document.location.href) {
+      statusInit = false;
+      oldHref = document.location.href;
+      /** reset list videos */
+      oldNumOfVideos = 0;
+      if (playlistPanel) {
+        playlistPanel.classList.add("d-none");
+      }
+    }
+  }
+
+  // Trigger on current page
+  if (
+    statusInit &&
+    oldHref == document.location.href &&
+    checkStartCondition()
+  ) {
+    // Trigger when anything in DOM changed
+    // Setup videos
+    setupVideos();
+    // Setup sharing playlist
+    fmuzikSharingSetup();
+    if (playlistPanel && playlistPanel.classList.contains("d-none")) {
+      playlistPanel.classList.remove("d-none");
+    }
+    // TODO detect link has fmuzikplaylistsharing.com in href
+    // <a class="x1i10hfl xjbqb8w x6umtig x1b1mbwd xaqea5y xav7gou x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 x1hl2dhg xggy1nq x1a2a7pz x1fey0fg" href="https://l.workplace.com/l.php?u=http%3A%2F%2Ffmuzikplaylistsharing.com%2F%3Ffmuzik%3D[[N%25C3%2589M%2520C%25C3%2582U%2520Y%25C3%258AU%2520V%25C3%2580O%2520KH%25C3%2594NG%2520TRUNG]]100067557739801%2Fvideos%2F399314322358887&amp;h=AT0S6ZzDrxNoEq7lwK2lxPNi_MIjIwZdlCDBjP_4OqSbPjoBDHXYKSg7O0My2NZxq7XYkCnFi5AN7KDCVayT3DuX3qLzFmxvgkxQDuGeghXHfNeFH86EVqjGJ9M7rfBw2IuPFzX8XPVQUPw5qNLFHQ7rSQJ8OyyGew6jCFo25Lm5iw&amp;__tn__=-UK-R&amp;c[0]=AT1mLn2tG_DyRAiQXycZ-ni1tPJ7Qb2_p8PvnIBUA5WyFG_ClB26_NKt6gkM7FeJcU71KNY5W2kw3DWJRvvqsgroiCgZ-h1Dk7cacOmtZqYe3aIdbzUs0E3VygzKGDSoTwVPjkfAr7qoKATMs-oKEW77yHMMfNlDOhKoY9gzki7dKXyztbbL_958BRhc4HIs" rel="nofollow noreferrer" role="link" tabindex="0" target="_blank">Playlist: Hoàng Dũng | Chia sẻ bởi FMuzik</a>
+  }
 }
 //#endregion load function
 
@@ -2037,6 +3382,9 @@ chrome.storage.sync.get((data) => {
     if (typeof data.fmuzikEverywhere == "boolean" && data.fmuzikEverywhere) {
       fmuzikEverywhere = true;
     }
+    if (typeof data?.favoriteVolume == "number") {
+      favoriteVolume = data.favoriteVolume;
+    }
   }
   if (typeof data.activePlaylist == "boolean" && data.activePlaylist) {
     activePlaylist = true;
@@ -2044,6 +3392,9 @@ chrome.storage.sync.get((data) => {
   }
   if (typeof data.loopEnabled == "boolean" && data.loopEnabled) {
     enableLoopVideo = true;
+  }
+  if (typeof data?.isRatedToFMuzik == "boolean" && data.isRatedToFMuzik) {
+    isRatedToFMuzik = true;
   }
 
   fmuzikInit();
