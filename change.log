@@ -2,7 +2,17 @@
   - Feature: TODO: Filter video of playlist (taitt7)
   - Feature: TODO: Add all videos in a post to playlist
 
-5.0 - 2023/03/03:
+5.3 - 2023/11/14:
+  - Fix: Fix crash layout when add video to list
+  - Fix: Duplicate panel
+
+5.2 - 2023/11/11:
+  - Fix: Fix volume init value
+
+5.1 - 2023/11/10:
+  - Fix: Disabled mode dev
+
+5.0 - 2023/11/09:
   - Feature: Import/Export, share playlist (anhpn6)
   - Feature: Shuffle videos
   - Feature: Edit name of video
