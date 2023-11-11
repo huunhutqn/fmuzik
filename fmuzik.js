@@ -127,13 +127,13 @@ let currentPlaylistPlayer = [];
 let currentPlaylistId = -1;
 let currentIndexPlaylistVideo = -1;
 let isLoopPlaylistVideoOnce = false;
-let favoriteVolume = 50;
+let favoriteVolume = 1;
 let currentVideoPlayingId = "";
 let isRatedToFMuzik = false;
 let isKattyActive = false;
 let isAskRatingShowing = false;
 
-const modeDev = false;
+const modeDev = true;
 
 //#region declear function
 
@@ -145,7 +145,7 @@ const modeDev = false;
 function log(content, data = null) {
   if (modeDev) {
     if (data === null) {
-      console.log(`${content}`);
+      console.log(content);
     } else {
       console.log(`${content} `, data);
     }
@@ -869,7 +869,7 @@ function playVideo(videoPlaying, index) {
           favoriteVolume =
             typeof parseFloat(video.volume) == "number"
               ? parseFloat(video.volume)
-              : 50;
+              : 1;
         }
         log(`volume changed: ${favoriteVolume}`);
         chrome.storage.sync.set({ favoriteVolume: favoriteVolume });
@@ -928,9 +928,6 @@ function selectVideo(e, video, index, playlistId) {
 function backToPlaylist(e) {
   e.preventDefault();
   createPlaylistItems();
-  if (document.querySelector(".fmuzik-playlist__controls")) {
-    document.querySelector(".fmuzik-playlist__controls").remove();
-  }
 }
 
 /**
@@ -1372,6 +1369,11 @@ function createPlaylistItems() {
     );
     label.setAttribute("title", "");
     label.innerText = "Danh sách playlist của bạn:";
+
+    if (document.querySelector(".fmuzik-playlist__controls")) {
+      document.querySelector(".fmuzik-playlist__controls").remove();
+    }
+
     if (playlist.length > 0) {
       listPlayer.classList.remove("fmuzik-playlist-panel--player-not-demand");
       playlist.forEach((element, index) => {
@@ -3271,50 +3273,52 @@ function fmuzikSharingSetup() {
  * Init FMuzik extension
  */
 function fmuzikInit() {
-  setTimeout(() => {
-    if (!activeFMuzik) {
-      return;
-    }
-
-    /**
-     * catch url changed
-     * https://stackoverflow.com/a/46428962
-     */
-    let bodyList = document.querySelector("body");
-
-    let isStillSetup = false;
-    let isStillScrollSetup = false;
-
-    let observer = new MutationObserver(function (mutations) {
-      isStillSetup = true;
-      mutations.forEach(function (mutation) {
-        // if (oldHref != document.location.href) {
-        //   oldHref = document.location.href;
-        // }
-        /* Changed ! your code here */
-        doSetup();
-      });
-      isStillSetup = false;
-    });
-
-    let config = {
-      // attributes: true,
-      childList: true,
-      subtree: true,
-    };
-
-    observer.observe(bodyList, config);
-    document.addEventListener("scroll", () => {
-      if (isStillSetup) {
+  if (!window?.parent?.document.querySelector(".fmuzik-playlist-panel")) {
+    setTimeout(() => {
+      if (!activeFMuzik) {
         return;
       }
-      isStillScrollSetup = true;
-      isStillSetup = true;
-      doSetup();
-      isStillSetup = false;
-      isStillScrollSetup = false;
-    });
-  }, 100);
+
+      /**
+       * catch url changed
+       * https://stackoverflow.com/a/46428962
+       */
+      let bodyList = document.querySelector("body");
+
+      let isStillSetup = false;
+      let isStillScrollSetup = false;
+
+      let observer = new MutationObserver(function (mutations) {
+        isStillSetup = true;
+        mutations.forEach(function (mutation) {
+          // if (oldHref != document.location.href) {
+          //   oldHref = document.location.href;
+          // }
+          /* Changed ! your code here */
+          doSetup();
+        });
+        isStillSetup = false;
+      });
+
+      let config = {
+        // attributes: true,
+        childList: true,
+        subtree: true,
+      };
+
+      observer.observe(bodyList, config);
+      document.addEventListener("scroll", () => {
+        if (isStillSetup) {
+          return;
+        }
+        isStillScrollSetup = true;
+        isStillSetup = true;
+        doSetup();
+        isStillSetup = false;
+        isStillScrollSetup = false;
+      });
+    }, 100);
+  }
 }
 
 function doSetup() {
