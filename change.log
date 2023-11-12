@@ -2,6 +2,10 @@
   - Feature: TODO: Filter video of playlist (taitt7)
   - Feature: TODO: Add all videos in a post to playlist
 
+5.5 - 2023/11/14:
+  - Update: Show version
+  - Fix: Dev mode
+
 5.4 - 2023/11/14:
   - Fix: Dev mode
 
