@@ -696,8 +696,17 @@ button.fmuzik-form-btn:hover {
   height: 30px;
   display: flex;
   align-items: center;
+  position: relative;
   .fmuzik-msteams {
     color: rgb(233, 235, 239);
+  }
+  .fmuzik-version {
+    position: absolute;
+    font-size: 9px;
+    top: 19px;
+    opacity: 0.2;
+    font-weight: 400;
+    letter-spacing: 1px;
   }
 }
 .fmuzik-credit > span,

@@ -137,6 +137,8 @@ const modeDev = () => {
   return !("update_url" in chrome.runtime.getManifest());
 };
 
+const fmuzikVersion = chrome.runtime.getManifest().version;
+
 //#region declear function
 
 /**
@@ -145,7 +147,7 @@ const modeDev = () => {
  * @param {*} data
  */
 function log(content, data = null) {
-  if (modeDev) {
+  if (modeDev()) {
     if (data === null) {
       console.log(content);
     } else {
@@ -1598,7 +1600,7 @@ function createPlaylistPanelElement() {
 
     const credit = document.createElement("div");
     credit.classList.add("row", "text-right", "text-muted", "fmuzik-credit");
-    credit.innerHTML = `<span>FMuzik by <a class="fmuzik-msteams" href="sip:nhutth4@fpt.com">NhutTH4</a></span> <svg class="fmuzik-emotion__normal" xmlns="http://www.w3.org/2000/svg" width="24" height="24" xmlns:v="https://vecta.io/nano" style="position: relative;bottom: -4px;fill: #fff;"><path d="M10 22a8 8 0 1 1 0-16 8 8 0 1 1 0 16zm0-2a6 6 0 1 0 0-12 6 6 0 1 0 0 12zm3-5a3 3 0 1 1-6 0h6zm-5-2a1 1 0 1 0 0-2 1 1 0 1 0 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 1 1 0 2zm6.625-5c-.827-.18-3.375-1.59-3.375-4.125 0-1.036.839-1.875 1.875-1.875a1.87 1.87 0 0 1 1.5.75 1.87 1.87 0 0 1 1.5-.75C21.161 2 22 2.839 22 3.875 22 6.41 19.452 7.82 18.625 8z" fill-rule="evenodd"></path></svg> <div class="fmuzik-emotion__face-wrap">
+    credit.innerHTML = `<span class="fmuzik-version">v${fmuzikVersion}</span><span>FMuzik by <a class="fmuzik-msteams" href="sip:nhutth4@fpt.com">NhutTH4</a></span> <svg class="fmuzik-emotion__normal" xmlns="http://www.w3.org/2000/svg" width="24" height="24" xmlns:v="https://vecta.io/nano" style="position: relative;bottom: -4px;fill: #fff;"><path d="M10 22a8 8 0 1 1 0-16 8 8 0 1 1 0 16zm0-2a6 6 0 1 0 0-12 6 6 0 1 0 0 12zm3-5a3 3 0 1 1-6 0h6zm-5-2a1 1 0 1 0 0-2 1 1 0 1 0 0 2zm4 0a1 1 0 1 1 0-2 1 1 0 1 1 0 2zm6.625-5c-.827-.18-3.375-1.59-3.375-4.125 0-1.036.839-1.875 1.875-1.875a1.87 1.87 0 0 1 1.5.75 1.87 1.87 0 0 1 1.5-.75C21.161 2 22 2.839 22 3.875 22 6.41 19.452 7.82 18.625 8z" fill-rule="evenodd"></path></svg> <div class="fmuzik-emotion__face-wrap">
     <div class="fmuzik-emotion__heart-wrap"><div class="fmuzik-emotion__heart">&nbsp;</div></div>
   </div>
     <!-- https://codepen.io/Ma5a/pen/BapbQam -->
