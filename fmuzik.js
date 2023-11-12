@@ -133,7 +133,9 @@ let isRatedToFMuzik = false;
 let isKattyActive = false;
 let isAskRatingShowing = false;
 
-const modeDev = flase;
+const modeDev = () => {
+  return !("update_url" in chrome.runtime.getManifest());
+};
 
 //#region declear function
 
@@ -3374,7 +3376,6 @@ function doSetup() {
     // <a class="x1i10hfl xjbqb8w x6umtig x1b1mbwd xaqea5y xav7gou x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 x1hl2dhg xggy1nq x1a2a7pz x1fey0fg" href="https://l.workplace.com/l.php?u=http%3A%2F%2Ffmuzikplaylistsharing.com%2F%3Ffmuzik%3D[[N%25C3%2589M%2520C%25C3%2582U%2520Y%25C3%258AU%2520V%25C3%2580O%2520KH%25C3%2594NG%2520TRUNG]]100067557739801%2Fvideos%2F399314322358887&amp;h=AT0S6ZzDrxNoEq7lwK2lxPNi_MIjIwZdlCDBjP_4OqSbPjoBDHXYKSg7O0My2NZxq7XYkCnFi5AN7KDCVayT3DuX3qLzFmxvgkxQDuGeghXHfNeFH86EVqjGJ9M7rfBw2IuPFzX8XPVQUPw5qNLFHQ7rSQJ8OyyGew6jCFo25Lm5iw&amp;__tn__=-UK-R&amp;c[0]=AT1mLn2tG_DyRAiQXycZ-ni1tPJ7Qb2_p8PvnIBUA5WyFG_ClB26_NKt6gkM7FeJcU71KNY5W2kw3DWJRvvqsgroiCgZ-h1Dk7cacOmtZqYe3aIdbzUs0E3VygzKGDSoTwVPjkfAr7qoKATMs-oKEW77yHMMfNlDOhKoY9gzki7dKXyztbbL_958BRhc4HIs" rel="nofollow noreferrer" role="link" tabindex="0" target="_blank">Playlist: Hoàng Dũng | Chia sẻ bởi FMuzik</a>
   }
 }
-//#endregion load function
 
 //#region load function
 chrome.storage.sync.get((data) => {
