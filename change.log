@@ -1,6 +1,14 @@
 6.0 - 2024:
   - Feature: TODO: Filter video of playlist (taitt7)
   - Feature: TODO: Add all videos in a post to playlist
+  - Fix: TODO storage size
+
+5.6 - 2024/05/11:
+  - Fix: Autoplay policy video with js
+  - Fix: Next video, auto next
+  - Fix: Play error when play video no exist longer
+  - Fix: Button(icon) add video to playlist overlay on video
+  - Fix: Crash on next/previous when play video of album videos
 
 5.5 - 2023/11/14:
   - Update: Show version
