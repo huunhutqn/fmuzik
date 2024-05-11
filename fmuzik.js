@@ -133,6 +133,8 @@ let isRatedToFMuzik = false;
 let isKattyActive = false;
 let isAskRatingShowing = false;
 
+let player = document.querySelector("#fmuzik-player");
+
 const modeDev = () => {
   return !("update_url" in chrome.runtime.getManifest());
 };
@@ -817,6 +819,7 @@ function createSaveToPlaylistElement(fmuzik_id) {
  * @link https://developers.facebook.com/docs/plugins/embedded-video-player/
  */
 function playVideo(videoPlaying, index) {
+  log("playVideo");
   currentIndexPlaylistVideo = parseInt(index);
 
   const currentVideoElInList = document.querySelector(
@@ -828,93 +831,121 @@ function playVideo(videoPlaying, index) {
       : "") ?? "";
 
   const newUrl = encodeURIComponent(videoPlaying.url);
-  const iframe = `<iframe id="fmuzik-player" 
-    src="https://fpt.workplace.com/plugins/video.php?href=${newUrl}%2F&width=300&show-text=false&height=144&mute=0&autoplay=true&show-captions=false&appId" 
-    width="300" height="144" 
-    style="border:none;overflow:hidden" 
-    scrolling="no" 
-    frameborder="0" 
-    allowfullscreen="true" 
-    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" 
-    allowFullScreen="true" 
-    data-show-captions="false" 
-    data-show-text="false"
-    data-fmuzik-playlist-id="${playListId}"
-    data-fmuzik-playlist-video-id="${index}"
-    data-fmuzik-playlist-video-url="${videoPlaying.url}">
-  </iframe>
-  `;
-  const playlistPanelPlayerMask = document.querySelector(
-    ".fmuzik-playlist-panel--player-mask"
-  );
-  playlistPanelPlayerMask.classList.add("fmuzik-playlist-panel--player-mask");
-  playlistPanelPlayerMask.innerHTML = "";
-  playlistPanelPlayerMask.insertAdjacentHTML("afterbegin", iframe);
-  const player = document.querySelector("#fmuzik-player");
-
+  log(newUrl);
+  const srcStr = `https://fpt.workplace.com/plugins/video.php?href=${newUrl}%2F&width=300&show-text=false&height=144&mute=0&autoplay=true&show-captions=false&appId`;
+  if (player) {
+    log("player exist");
+    player.removeEventListener("load", playerLoadEvent, false);
+    player.setAttribute("data-fmuzik-playlist-id", playListId);
+    player.setAttribute("data-fmuzik-playlist-video-id", index);
+    player.setAttribute("data-fmuzik-playlist-video-url", videoPlaying.url);
+    player.setAttribute("src", srcStr);
+  } else {
+    log("player no exist");
+    const iframe = `<iframe id="fmuzik-player" 
+      src="${srcStr}" 
+      width="300" height="144" 
+      style="border:none;overflow:hidden" 
+      scrolling="no"
+      frameborder="0"
+      allowfullscreen="true"
+      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" 
+      allowFullScreen="true"
+      data-show-captions="false"
+      data-show-text="false"
+      data-fmuzik-playlist-id="${playListId}"
+      data-fmuzik-playlist-video-id="${index}"
+      data-fmuzik-playlist-video-url="${videoPlaying.url}">
+    </iframe>
+    `;
+    const playlistPanelPlayerMask = document.querySelector(
+      ".fmuzik-playlist-panel--player-mask"
+    );
+    playlistPanelPlayerMask.classList.add("fmuzik-playlist-panel--player-mask");
+    playlistPanelPlayerMask.innerHTML = "";
+    playlistPanelPlayerMask.insertAdjacentHTML("afterbegin", iframe);
+    player = document.querySelector("#fmuzik-player");
+    log("setup player = iframe done");
+  }
   setTimeout(() => {
-    player.addEventListener("load", (e) => {
-      const video = player.contentWindow.document.body.querySelector("video");
-      // unmuted
-      video.muted = false;
-      video.volume = favoriteVolume;
-      video.play();
-      video.oncanplay = function () {
-        log("video.oncanplay");
-        video.defaultMuted = false;
-        video.removeAttribute("muted");
-        video.volume = favoriteVolume;
-      };
-
-      video.addEventListener("volumechange", (e) => {
-        if (video.muted === true) {
-          favoriteVolume = 0;
-        } else {
-          favoriteVolume =
-            typeof parseFloat(video.volume) == "number"
-              ? parseFloat(video.volume)
-              : 1;
-        }
-        log(`volume changed: ${favoriteVolume}`);
-        chrome.storage.sync.set({ favoriteVolume: favoriteVolume });
-      });
-
-      // Hide subtitle
-      if (
-        video.nextSibling &&
-        video.nextSibling.firstElementChild &&
-        video.nextSibling.firstElementChild.tagName.toLowerCase() == "span"
-      ) {
-        video.nextSibling.classList.add("d-none");
-      }
-
-      video.addEventListener("ended", (e) => {
-        if (isLoopPlaylistVideoOnce) {
-          // Loop video
-          video.play();
-        } else {
-          // next video
-          nextVideo(e);
-        }
-
-        setTimeout(() => {
-          log("isRatedToFMuzik: ", isRatedToFMuzik);
-          if (!isRatedToFMuzik) {
-            const unlucky = Math.round(Math.random() * 4);
-            // In Vietnamese, 4 is lost : )
-            log("unlucky: ", unlucky);
-            if (unlucky === 4 && !isAskRatingShowing) {
-              setupAskRating();
-            }
-          }
-        }, 500);
-      });
-    });
+    player.addEventListener("load", playerLoadEvent, false);
 
     // Update icon playing on item
     updateIconPlayingOnItem(currentIndexPlaylistVideo);
     currentVideoPlayingId = videoPlaying.id;
-  }, 50);
+  }, 300);
+}
+
+function playerLoadEvent() {
+  log("player loaded");
+  const video = player.contentWindow.document.body.querySelector("video");
+  log(player.contentWindow.document.body);
+  log(video);
+  if (!video) {
+    // avoid play video error by user delete or user is bay mau
+    nextVideo();
+    return;
+  }
+  // unmuted
+  video.muted = false;
+  video.volume = favoriteVolume;
+  // const buttonPlay = player.contentWindow.document.body.querySelector(
+  //   `input[aria-label="Phát video"]`
+  // );
+  video.play();
+  // if (buttonPlay) {
+  //   buttonPlay?.click();
+  //   log("buttonPlay?.clicked");
+  // }
+  video.oncanplay = function () {
+    log("video.oncanplay");
+    video.defaultMuted = false;
+    video.removeAttribute("muted");
+    video.volume = favoriteVolume;
+  };
+
+  video.addEventListener("volumechange", (e) => {
+    if (video.muted === true) {
+      favoriteVolume = 0;
+    } else {
+      favoriteVolume =
+        typeof parseFloat(video.volume) == "number"
+          ? parseFloat(video.volume)
+          : 1;
+    }
+    log(`volume changed: ${favoriteVolume}`);
+    chrome.storage.sync.set({ favoriteVolume: favoriteVolume });
+  });
+
+  // Hide subtitle
+  if (
+    video.nextSibling &&
+    video.nextSibling.firstElementChild &&
+    video.nextSibling.firstElementChild.tagName.toLowerCase() == "span"
+  ) {
+    video.nextSibling.classList.add("d-none");
+  }
+
+  video.addEventListener("ended", (e) => {
+    if (isLoopPlaylistVideoOnce) {
+      // Loop video
+      video.play();
+    } else {
+      // next video
+      nextVideo(e);
+    }
+
+    setTimeout(() => {
+      log("isRatedToFMuzik: ", isRatedToFMuzik);
+      if (!isRatedToFMuzik) {
+        const unlucky = Math.round(Math.random() * 3);
+        log("unlucky: ", unlucky);
+        if (unlucky === 3 && !isAskRatingShowing) {
+          setupAskRating();
+        }
+      }
+    }, 500);
+  });
 }
 
 /**
@@ -957,7 +988,9 @@ function prevVideo(e) {
  * Next video
  */
 function nextVideo(e) {
-  e.preventDefault();
+  if (e) {
+    e.preventDefault();
+  }
   const min = 0;
   const max = currentPlaylistPlayer.length - 1;
 
@@ -2036,10 +2069,19 @@ function setupSaveToPlaylist(video) {
           .querySelector("[data-instancekey] [data-visualcompletion=ignore]")
           .insertAdjacentElement("afterbegin", newButtonSaveToPlaylist);
       } else {
-        video
+        let elAppendBtnSaveVideo = video
           .closest("[data-visualcompletion=ignore]")
-          ?.querySelector("[data-instancekey] [data-visualcompletion=ignore]")
-          ?.insertAdjacentElement("afterbegin", newButtonSaveToPlaylist);
+          ?.querySelector("[data-instancekey] [data-visualcompletion=ignore]");
+        if (!elAppendBtnSaveVideo) {
+          // try mode single video view
+          elAppendBtnSaveVideo = video.closest("[data-pagelet=TahoeVideo]");
+        }
+        if (elAppendBtnSaveVideo) {
+          elAppendBtnSaveVideo.insertAdjacentElement(
+            "afterbegin",
+            newButtonSaveToPlaylist
+          );
+        }
       }
     }
   } else if (!activePlaylist) {
@@ -3291,17 +3333,25 @@ function fmuzikInit() {
 
       let isStillSetup = false;
       let isStillScrollSetup = false;
+      let oldMutationsLength = 0;
 
       let observer = new MutationObserver(function (mutations) {
+        if (isStillSetup || oldMutationsLength == mutations.length) {
+          return;
+        }
+        oldMutationsLength = mutations.length;
         isStillSetup = true;
-        mutations.forEach(function (mutation) {
+        mutations.forEach((mutation, index) => {
+          log("mutations loop");
           // if (oldHref != document.location.href) {
           //   oldHref = document.location.href;
           // }
           /* Changed ! your code here */
           doSetup();
+          if (index == mutations.length - 1) {
+            isStillSetup = false;
+          }
         });
-        isStillSetup = false;
       });
 
       let config = {
@@ -3315,6 +3365,8 @@ function fmuzikInit() {
         if (isStillSetup) {
           return;
         }
+        log("addEventListener scroll");
+
         isStillScrollSetup = true;
         isStillSetup = true;
         doSetup();
@@ -3326,11 +3378,15 @@ function fmuzikInit() {
 }
 
 function doSetup() {
+  log("doSetup");
   // Trigger when navigate to another page
   if (
     (!statusInit && checkStartCondition()) ||
     (oldHref != document.location.href && checkStartCondition())
   ) {
+    log(
+      "(!statusInit && checkStartCondition()) || (oldHref != document.location.href && checkStartCondition()"
+    );
     statusInit = true;
     oldHref = document.location.href;
     oldNumOfVideos = 0;
@@ -3350,6 +3406,9 @@ function doSetup() {
     setupPopupPlaylist();
   } else {
     if (oldHref != document.location.href) {
+      log(
+        "else (!statusInit && checkStartCondition()) || (oldHref != document.location.href && checkStartCondition()"
+      );
       statusInit = false;
       oldHref = document.location.href;
       /** reset list videos */
@@ -3366,6 +3425,7 @@ function doSetup() {
     oldHref == document.location.href &&
     checkStartCondition()
   ) {
+    log("Trigger on current page");
     // Trigger when anything in DOM changed
     // Setup videos
     setupVideos();
