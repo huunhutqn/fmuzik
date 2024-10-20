@@ -1,3 +1,23 @@
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.message === 'Play' || request.message === 'Pause') {
+    console.log(`Message received in content script: ${request.message}`);
+    const video = document.querySelector('video');
+    if (!video) {
+      sendResponse({ success: false });
+      console.log('Video undefined, send response false');
+      return;
+    }
+    if (request.message === 'Play') {
+      console.log('Play video, send response true');
+      sendResponse({ success: true });
+      video.play();
+    } else {
+      console.log('Pause video, not send response');
+      video.pause();
+    }
+  }
+});
+
 const fptWorkplace = "https://fpt.workplace.com";
 
 let oldHref = "";
@@ -2450,7 +2470,7 @@ function reorderPlaylistVideos() {
       if (
         currentIndexPlaylistVideo !== -1 &&
         videoItemEl.getAttribute(ATTRIBUTE_NAME.PLAYLIST_ID) ==
-          fmuzilPlayerEl.dataset.fmuzikPlaylistId
+        fmuzilPlayerEl.dataset.fmuzikPlaylistId
       ) {
         if (
           videoItemEl.getAttribute(ATTRIBUTE_NAME.VIDEO_URL) ==
@@ -2528,8 +2548,8 @@ function saveDataCurrentPlaylist(
         chrome.storage.sync.set({ playlist: playlist });
         log(
           "save playlist " +
-            playlist[indexOfCurrentPlaylistNeedToSave].name +
-            " success!"
+          playlist[indexOfCurrentPlaylistNeedToSave].name +
+          " success!"
         );
       }
     }
@@ -2558,8 +2578,8 @@ function savePlaylistName(playlistId, playlistName, toolBoxEl = null) {
         chrome.storage.sync.set({ playlist: playlist });
         log(
           "save playlist " +
-            playlist[indexOfCurrentPlaylistNeedToSave].name +
-            " success!"
+          playlist[indexOfCurrentPlaylistNeedToSave].name +
+          " success!"
         );
         if (toolBoxEl) {
           showMsgOnItem(
@@ -2619,10 +2639,10 @@ function saveVideoName(playlistId, videoId, videoName, toolBoxEl = null) {
           chrome.storage.sync.set({ playlist: playlist });
           log(
             "save video " +
-              playlist[indexOfCurrentPlaylistNeedToSave].videos[
-                indexOfCurrentVideoNeedToSave
-              ].name +
-              " success!"
+            playlist[indexOfCurrentPlaylistNeedToSave].videos[
+              indexOfCurrentVideoNeedToSave
+            ].name +
+            " success!"
           );
           if (toolBoxEl) {
             showMsgOnItem(
