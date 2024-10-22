@@ -1,18 +1,18 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === 'Play' || request.message === 'Pause') {
-    console.log(`Message received in content script: ${request.message}`);
+    log(`Message received in content script: ${request.message}`);
     const video = document.querySelector('video');
     if (!video) {
       sendResponse({ success: false });
-      console.log('Video undefined, send response false');
+      log('Video undefined, send response false');
       return;
     }
     if (request.message === 'Play') {
-      console.log('Play video, send response true');
+      log('Play video, send response true');
       sendResponse({ success: true });
       video.play();
     } else {
-      console.log('Pause video, not send response');
+      log('Pause video, not send response');
       video.pause();
     }
   }
